@@ -12,9 +12,10 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-whatsapp shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+      className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center justify-center w-[52px] h-[52px] sm:w-14 sm:h-14 rounded-full bg-whatsapp shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <MessageCircle fill="white" color="white" size={26} />
+      <MessageCircle fill="white" color="white" size={24} />
     </a>
   );
 }

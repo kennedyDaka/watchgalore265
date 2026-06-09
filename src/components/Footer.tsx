@@ -1,6 +1,22 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { getCategories } from '@/lib/supabase';
+
+interface Category {
+  id: string;
+  slug: string;
+  name: string;
+}
 
 export default function Footer() {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(() => {});
+  }, []);
+
   return (
     <footer className="bg-white border-t border-gray-100 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,18 +38,18 @@ export default function Footer() {
               SHOP
             </h4>
             <ul className="space-y-2.5">
-              {[
-                { href: '/shop', label: 'All' },
-                { href: '/shop?category=watches', label: 'Watches' },
-                { href: '/shop?category=wallets', label: 'Wallets' },
-                { href: '/shop?category=belts', label: 'Belts' },
-              ].map(link => (
-                <li key={link.label}>
+              <li>
+                <Link href="/shop" className="text-sm text-gray-600 hover:text-accent transition-colors">
+                  All
+                </Link>
+              </li>
+              {categories.map(cat => (
+                <li key={cat.id}>
                   <Link
-                    href={link.href}
+                    href={`/shop?category=${cat.slug}`}
                     className="text-sm text-gray-600 hover:text-accent transition-colors"
                   >
-                    {link.label}
+                    {cat.name}
                   </Link>
                 </li>
               ))}

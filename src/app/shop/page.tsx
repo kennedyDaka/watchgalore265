@@ -7,18 +7,16 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
-import { getProducts } from '@/lib/supabase';
+import { getProducts, getCategories } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 
 type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'popular';
-type FilterCategory = 'all' | 'watches' | 'wallets' | 'belts';
 
-const FILTER_LABELS: { key: FilterCategory; label: string }[] = [
-  { key: 'all', label: 'ALL' },
-  { key: 'watches', label: 'WATCHES' },
-  { key: 'wallets', label: 'WALLETS' },
-  { key: 'belts', label: 'BELTS' },
-];
+interface Category {
+  id: string;
+  slug: string;
+  name: string;
+}
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'newest', label: 'Newest' },
@@ -34,10 +32,15 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<FilterCategory>(
-    (searchParams.get('category') as FilterCategory) || 'all'
+  const [category, setCategory] = useState(
+    searchParams.get('category') || 'all'
   );
   const [sort, setSort] = useState<SortOption>('newest');
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(() => {});
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -63,11 +66,11 @@ export default function ShopPage() {
 
   // Sync category from URL params
   useEffect(() => {
-    const cat = searchParams.get('category') as FilterCategory;
+    const cat = searchParams.get('category');
     if (cat && cat !== category) setCategory(cat);
   }, [searchParams]); // eslint-disable-line
 
-  const handleCategoryChange = (cat: FilterCategory) => {
+  const handleCategoryChange = (cat: string) => {
     setCategory(cat);
     const params = new URLSearchParams(searchParams.toString());
     if (cat === 'all') {
@@ -85,10 +88,10 @@ export default function ShopPage() {
     <>
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-screen">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 min-h-screen">
         {/* Page header */}
-        <div className="mb-8 accent-line">
-          <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight mb-1">
+        <div className="mb-6 sm:mb-8 accent-line">
+          <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight mb-1">
             The Collection
           </h1>
           <p className="text-gray-500 text-sm">
@@ -97,7 +100,7 @@ export default function ShopPage() {
         </div>
 
         {/* Search */}
-        <div className="relative mb-5">
+        <div className="relative mb-4 sm:mb-5">
           <Search
             size={16}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -112,20 +115,30 @@ export default function ShopPage() {
         </div>
 
         {/* Filters row */}
-        <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5 sm:mb-6">
           {/* Category pills */}
           <div className="flex items-center gap-2 flex-wrap">
-            {FILTER_LABELS.map(f => (
+            <button
+              onClick={() => handleCategoryChange('all')}
+              className={`px-3 sm:px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
+                category === 'all'
+                  ? 'bg-accent border-accent text-white'
+                  : 'border-gray-300 text-gray-600 hover:border-accent hover:text-accent'
+              }`}
+            >
+              ALL
+            </button>
+            {categories.map(cat => (
               <button
-                key={f.key}
-                onClick={() => handleCategoryChange(f.key)}
-                className={`px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
-                  category === f.key
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.slug)}
+                className={`px-3 sm:px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
+                  category === cat.slug
                     ? 'bg-accent border-accent text-white'
                     : 'border-gray-300 text-gray-600 hover:border-accent hover:text-accent'
                 }`}
               >
-                {f.label}
+                {cat.name.toUpperCase()}
               </button>
             ))}
           </div>
@@ -154,7 +167,7 @@ export default function ShopPage() {
 
         {/* Product grid */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="aspect-square bg-gray-100 mb-3" />
@@ -173,7 +186,7 @@ export default function ShopPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 animate-fadeIn">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 animate-fadeIn">
             {products.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}

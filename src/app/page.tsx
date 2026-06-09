@@ -4,10 +4,22 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
-import { getFeaturedProducts } from '@/lib/supabase';
+import { getFeaturedProducts, getCategories } from '@/lib/supabase';
 import { ShieldCheck, Truck, Star, MessageCircle } from 'lucide-react';
 
 export const revalidate = 60;
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  watches: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
+  wallets: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&q=80',
+  belts: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80',
+};
+
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  watches: 'Precision crafted timepieces',
+  wallets: 'Premium leather wallets',
+  belts: 'Classic and contemporary belts',
+};
 
 const TESTIMONIALS = [
   { name: 'James M.', location: 'Lilongwe', text: 'The chronograph I ordered arrived perfectly packaged. Quality is outstanding for the price. Will order again!', stars: 5 },
@@ -17,11 +29,15 @@ const TESTIMONIALS = [
 
 export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
+  let categories: Awaited<ReturnType<typeof getCategories>> = [];
   try {
-    featuredProducts = await getFeaturedProducts();
+    [featuredProducts, categories] = await Promise.all([
+      getFeaturedProducts(),
+      getCategories(),
+    ]);
   } catch {}
 
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265993000000';
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
   const waMsg = encodeURIComponent('Hello WatchGalore265 👋 I would like to enquire about your products.');
 
   return (
@@ -30,7 +46,6 @@ export default async function HomePage() {
 
       {/* ─── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-charcoal">
-        {/* Background image with overlay */}
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80"
@@ -41,11 +56,9 @@ export default async function HomePage() {
           />
         </div>
 
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          {/* Promo badge */}
           <div className="inline-flex items-center gap-2 bg-accent/20 border border-accent/40 text-white text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
             Free Same-Day Delivery in Lilongwe
@@ -82,7 +95,6 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40">
           <div className="w-px h-10 bg-gradient-to-b from-white/0 to-white/40 animate-pulse"></div>
         </div>
@@ -107,63 +119,46 @@ export default async function HomePage() {
       </section>
 
       {/* ─── Categories ────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="accent-line">
-          <h2 className="text-3xl font-black uppercase tracking-tight mb-1">The Collection</h2>
-          <p className="text-gray-500 text-sm mb-10">Explore our curated categories</p>
-        </div>
+      {categories.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="accent-line">
+            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">The Collection</h2>
+            <p className="text-gray-500 text-sm mb-10">Explore our curated categories</p>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              label: 'Watches',
-              href: '/shop?category=watches',
-              img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
-              desc: 'Precision crafted timepieces',
-            },
-            {
-              label: 'Wallets',
-              href: '/shop?category=wallets',
-              img: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&q=80',
-              desc: 'Premium leather wallets',
-            },
-            {
-              label: 'Belts',
-              href: '/shop?category=belts',
-              img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80',
-              desc: 'Classic and contemporary belts',
-            },
-          ].map(cat => (
-            <Link
-              key={cat.label}
-              href={cat.href}
-              className="relative group overflow-hidden aspect-[4/3] bg-gray-100"
-            >
-              <Image
-                src={cat.img}
-                alt={cat.label}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 p-6">
-                <p className="text-white text-xl font-black uppercase tracking-wide">{cat.label}</p>
-                <p className="text-white/70 text-xs mt-1">{cat.desc}</p>
-              </div>
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="bg-white text-black text-[10px] font-bold uppercase tracking-widest px-3 py-1.5">
-                  Shop →
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {categories.map(cat => (
+              <Link
+                key={cat.id}
+                href={`/shop?category=${cat.slug}`}
+                className="relative group overflow-hidden aspect-[4/3] bg-gray-100"
+              >
+                <Image
+                  src={CATEGORY_IMAGES[cat.slug] || CATEGORY_IMAGES.watches}
+                  alt={cat.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-6">
+                  <p className="text-white text-xl font-black uppercase tracking-wide">{cat.name}</p>
+                  <p className="text-white/70 text-xs mt-1">{CATEGORY_DESCRIPTIONS[cat.slug] || cat.name}</p>
+                </div>
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="bg-white text-black text-[10px] font-bold uppercase tracking-widest px-3 py-1.5">
+                    Shop →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── Featured Products ──────────────────────────────────────────── */}
       {featuredProducts.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
           <div className="accent-line">
             <h2 className="text-3xl font-black uppercase tracking-tight mb-1">Featured Pieces</h2>
             <p className="text-gray-500 text-sm mb-10">Hand-picked for the discerning gentleman</p>
@@ -187,7 +182,7 @@ export default async function HomePage() {
       )}
 
       {/* ─── Trust Indicators ──────────────────────────────────────────── */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 py-12 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
             {[
@@ -208,7 +203,7 @@ export default async function HomePage() {
       </section>
 
       {/* ─── Testimonials ──────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <div className="accent-line">
           <h2 className="text-3xl font-black uppercase tracking-tight mb-1">Customer Reviews</h2>
           <p className="text-gray-500 text-sm mb-10">What our customers say</p>
@@ -233,7 +228,7 @@ export default async function HomePage() {
       </section>
 
       {/* ─── CTA Banner ────────────────────────────────────────────────── */}
-      <section className="bg-charcoal text-white py-16 text-center">
+      <section className="bg-charcoal text-white py-14 sm:py-16 text-center">
         <div className="max-w-xl mx-auto px-4">
           <h2 className="text-3xl font-black uppercase tracking-tight mb-3">
             Ready to Elevate Your Style?
