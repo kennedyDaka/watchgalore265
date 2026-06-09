@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, getCategories } from '@/lib/supabase';
 import OrdersTab from '@/components/admin/OrdersTab';
 import ProductsTab from '@/components/admin/ProductsTab';
 import StockTab from '@/components/admin/StockTab';
@@ -26,11 +26,13 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('orders');
   const [adminEmail, setAdminEmail] = useState('');
   const [signing, setSigning] = useState(false);
+  const [navCategories, setNavCategories] = useState<{ slug: string; name: string }[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user?.email) setAdminEmail(data.user.email);
     });
+    getCategories().then(setNavCategories).catch(() => {});
   }, []);
 
   const handleSignOut = async () => {
@@ -60,9 +62,10 @@ export default function AdminDashboard() {
             <nav className="hidden md:flex items-center gap-8">
               {[
                 { href: '/shop', label: 'SHOP' },
-                { href: '/shop?category=watches', label: 'WATCHES' },
-                { href: '/shop?category=wallets', label: 'WALLETS' },
-                { href: '/shop?category=belts', label: 'BELTS' },
+                ...navCategories.map(c => ({
+                  href: `/shop?category=${c.slug}`,
+                  label: c.name.toUpperCase(),
+                })),
               ].map(l => (
                 <Link
                   key={l.label}

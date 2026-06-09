@@ -9,12 +9,17 @@ import {
   updateProduct,
   deleteProduct,
   uploadProductImage,
+  getCategories,
 } from '@/lib/supabase';
 import { Product, Category } from '@/lib/types';
 import { formatMK } from '@/components/ProductCard';
 import toast from 'react-hot-toast';
 
-const CATEGORIES: Category[] = ['watches', 'wallets', 'belts'];
+interface DbCategory {
+  id: string;
+  slug: string;
+  name: string;
+}
 
 const EMPTY_FORM = {
   name: '',
@@ -33,10 +38,12 @@ function ProductModal({
   product,
   onClose,
   onSaved,
+  categories,
 }: {
   product?: Product | null;
   onClose: () => void;
   onSaved: () => void;
+  categories: DbCategory[];
 }) {
   const [form, setForm] = useState<FormState>(
     product
@@ -141,7 +148,7 @@ function ProductModal({
             </Field>
             <Field label="Category *">
               <select value={form.category} onChange={e => set('category', e.target.value as Category)} className="input-base capitalize">
-                {CATEGORIES.map(c => <option key={c} value={c} className="capitalize">{c}</option>)}
+                {categories.map(c => <option key={c.id} value={c.slug} className="capitalize">{c.name}</option>)}
               </select>
             </Field>
           </div>
@@ -266,13 +273,14 @@ export default function ProductsTab() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | Category>('all');
   const [modalProduct, setModalProduct] = useState<Product | null | undefined>(undefined);
-  // undefined = closed, null = new, Product = editing
+  const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getAllProducts();
+      const [data, cats] = await Promise.all([getAllProducts(), getCategories()]);
       setProducts(data || []);
+      setDbCategories(cats || []);
     } catch {
       toast.error('Failed to load products');
     } finally {
@@ -314,7 +322,7 @@ export default function ProductsTab() {
           className="flex-1 px-4 py-2.5 border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:border-accent"
         />
         <div className="flex gap-2 flex-wrap">
-          {(['all', ...CATEGORIES] as const).map(c => (
+          {(['all', ...dbCategories.map(c => c.slug)] as const).map(c => (
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
@@ -416,6 +424,7 @@ export default function ProductsTab() {
           product={modalProduct}
           onClose={() => setModalProduct(undefined)}
           onSaved={fetch}
+          categories={dbCategories}
         />
       )}
     </div>
