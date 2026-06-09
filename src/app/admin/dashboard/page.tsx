@@ -32,7 +32,7 @@ export default function AdminDashboard() {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user?.email) setAdminEmail(data.user.email);
     });
-    getCategories().then(setNavCategories).catch(() => {});
+    getCategories().then(setNavCategories).catch(e => console.error('Failed to load nav categories:', e));
   }, []);
 
   const handleSignOut = async () => {

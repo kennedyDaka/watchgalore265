@@ -39,7 +39,7 @@ export default function ShopPage() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(e => console.error('Failed to load categories:', e));
   }, []);
 
   const fetchProducts = useCallback(async () => {

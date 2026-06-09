@@ -14,7 +14,7 @@ export default function Footer() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    getCategories().then(setCategories).catch(e => console.error('Failed to load categories:', e));
   }, []);
 
   return (

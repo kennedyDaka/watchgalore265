@@ -55,8 +55,9 @@ export default function CategoriesTab() {
       setNewName('');
       setShowAdd(false);
       fetch();
-    } catch {
-      toast.error('Failed to create category');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to create category';
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -72,8 +73,9 @@ export default function CategoriesTab() {
       await deleteCategory(cat.id);
       toast.success('Category deleted');
       fetch();
-    } catch {
-      toast.error('Failed to delete category');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to delete category';
+      toast.error(msg);
     }
   };
 

@@ -1,9 +1,30 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, Session } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Ensure the client has a valid session before write operations.
+// Refreshes the session if expired and throws a clear error if not authenticated.
+async function requireAuth(): Promise<Session> {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw new Error(`Session error: ${sessionError.message}`);
+  if (!session) throw new Error('Not authenticated — please sign in again.');
+
+  // If the access token is expired, attempt a refresh
+  const expiresAt = session.expires_at ?? 0;
+  const now = Math.floor(Date.now() / 1000);
+  if (expiresAt - now < 60) {
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshed.session) {
+      throw new Error('Session expired — please sign in again.');
+    }
+    return refreshed.session;
+  }
+
+  return session;
+}
 
 // ─── Helper: normalise DB row → Product shape ─────────────────────────────
 
@@ -189,6 +210,7 @@ export async function createProduct(productData: {
   images: string[];
   colors?: string[];
 }) {
+  await requireAuth();
   // Resolve category slug → id
   const { data: cat } = await supabase
     .from('categories')
@@ -234,6 +256,7 @@ export async function updateProduct(id: string, productData: {
   images?: string[];
   colors?: string[];
 }) {
+  await requireAuth();
   const updates: Record<string, unknown> = {};
 
   if (productData.name !== undefined) updates.name = productData.name;
@@ -272,6 +295,7 @@ export async function updateProduct(id: string, productData: {
 }
 
 export async function deleteProduct(id: string) {
+  await requireAuth();
   const { error } = await supabase.from('products').delete().eq('id', id);
   if (error) throw error;
 }
@@ -288,6 +312,7 @@ export async function getCategories() {
 }
 
 export async function createCategory(slug: string, name: string) {
+  await requireAuth();
   const { data, error } = await supabase
     .from('categories')
     .insert([{ slug, name }])
@@ -298,6 +323,7 @@ export async function createCategory(slug: string, name: string) {
 }
 
 export async function deleteCategory(id: string) {
+  await requireAuth();
   const { error } = await supabase
     .from('categories')
     .delete()

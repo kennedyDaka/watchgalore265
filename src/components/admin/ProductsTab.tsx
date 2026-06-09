@@ -296,8 +296,9 @@ export default function ProductsTab() {
       await deleteProduct(product.id);
       toast.success('Product deleted');
       fetch();
-    } catch {
-      toast.error('Failed to delete product');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to delete product';
+      toast.error(msg);
     }
   };
 
