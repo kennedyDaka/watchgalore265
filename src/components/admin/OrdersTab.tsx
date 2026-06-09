@@ -34,7 +34,9 @@ function OrderRow({ order, onStatusChange }: { order: Order; onStatusChange: () 
     }
   };
 
-  const whatsappNumber = order.phone.replace(/\D/g, '');
+  // Format phone for WhatsApp: ensure country code (265) prefix
+  const raw = order.phone.replace(/\D/g, '');
+  const whatsappNumber = raw.startsWith('265') ? raw : raw.startsWith('0') ? '265' + raw.slice(1) : '265' + raw;
   const waUrl = `https://wa.me/${whatsappNumber}`;
 
   return (

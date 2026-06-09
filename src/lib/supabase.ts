@@ -19,6 +19,7 @@ function normalizeProduct(row: any) {
     price: row.price,
     // prefer multi-image array; fall back to image_url
     images: row.images?.length ? row.images : (row.image_url ? [row.image_url] : []),
+    colors: row.colors || [],
     stock: row.stock_quantity ?? 0,
     featured: row.featured,
     brand: row.brand || null,
@@ -186,6 +187,7 @@ export async function createProduct(productData: {
   stock: number;
   featured: boolean;
   images: string[];
+  colors?: string[];
 }) {
   // Resolve category slug → id
   const { data: cat } = await supabase
@@ -209,6 +211,7 @@ export async function createProduct(productData: {
     image_url: productData.images[0] || null,
     slug: `${slug}-${Date.now()}`,
     tagline: '',
+    colors: productData.colors || [],
   };
 
   const { data, error } = await supabase
@@ -229,6 +232,7 @@ export async function updateProduct(id: string, productData: {
   stock?: number;
   featured?: boolean;
   images?: string[];
+  colors?: string[];
 }) {
   const updates: Record<string, unknown> = {};
 
@@ -241,6 +245,7 @@ export async function updateProduct(id: string, productData: {
     updates.images = productData.images;
     updates.image_url = productData.images[0] || null;
   }
+  if (productData.colors !== undefined) updates.colors = productData.colors;
   if (productData.stock !== undefined) {
     updates.stock_quantity = productData.stock;
     updates.in_stock = productData.stock > 0;
@@ -268,6 +273,35 @@ export async function updateProduct(id: string, productData: {
 
 export async function deleteProduct(id: string) {
   const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ─── Categories ──────────────────────────────────────────────
+
+export async function getCategories() {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createCategory(slug: string, name: string) {
+  const { data, error } = await supabase
+    .from('categories')
+    .insert([{ slug, name }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteCategory(id: string) {
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', id);
   if (error) throw error;
 }
 

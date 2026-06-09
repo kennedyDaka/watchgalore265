@@ -27,7 +27,6 @@ create table if not exists public.products (
   in_stock        boolean not null default false,
   featured        boolean not null default false,
   images          text[] default '{}',
-  colors          text[] default '{}',
   image_url       text,
   slug            text,
   created_at      timestamptz default now(),

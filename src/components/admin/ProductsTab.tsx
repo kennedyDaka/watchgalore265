@@ -24,6 +24,7 @@ const EMPTY_FORM = {
   brand: '',
   stock: '',
   featured: false,
+  colors: '' as string,
 };
 
 type FormState = typeof EMPTY_FORM;
@@ -47,6 +48,7 @@ function ProductModal({
           brand: product.brand || '',
           stock: String(product.stock),
           featured: product.featured,
+          colors: (product.colors || []).join(', '),
         }
       : EMPTY_FORM
   );
@@ -87,6 +89,7 @@ function ProductModal({
         stock: Number(form.stock),
         featured: form.featured,
         images,
+        colors: form.colors ? form.colors.split(',').map(c => c.trim()).filter(Boolean) : [],
       };
       if (product) {
         await updateProduct(product.id, data);
@@ -161,6 +164,16 @@ function ProductModal({
               placeholder="Product description…"
               rows={3}
               className="input-base resize-none"
+            />
+          </Field>
+
+          {/* Colors */}
+          <Field label="Colors (comma-separated)">
+            <input
+              value={form.colors}
+              onChange={e => set('colors', e.target.value)}
+              placeholder="e.g. Black, Silver, Gold"
+              className="input-base"
             />
           </Field>
 

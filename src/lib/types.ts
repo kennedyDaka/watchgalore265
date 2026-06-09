@@ -1,4 +1,4 @@
-export type Category = 'watches' | 'wallets' | 'belts';
+export type Category = 'watches' | 'wallets' | 'belts' | string;
 
 export interface Product {
   id: string;
@@ -7,6 +7,7 @@ export interface Product {
   category: Category;
   price: number;
   images: string[];
+  colors?: string[];
   stock: number;
   featured: boolean;
   brand?: string;

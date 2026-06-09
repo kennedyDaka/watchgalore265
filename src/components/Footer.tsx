@@ -48,7 +48,7 @@ export default function Footer() {
             <div className="flex gap-3">
               {/* Instagram */}
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/watch_galoremw/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-accent hover:text-accent transition-colors"
@@ -60,7 +60,7 @@ export default function Footer() {
               </a>
               {/* Facebook */}
               <a
-                href="https://facebook.com"
+                href="https://web.facebook.com/people/Watch-galore-MW265/61565136636891/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-accent hover:text-accent transition-colors"
@@ -82,7 +82,9 @@ export default function Footer() {
               Admin
             </Link>
             <span>·</span>
-            <span>POWERED BY OPERON SYSTEMS</span>
+            <a href="https://operon-website.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors uppercase tracking-wider">
+              POWERED BY OPERON SYSTEMS
+            </a>
           </div>
         </div>
       </div>
