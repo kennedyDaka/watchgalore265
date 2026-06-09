@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { getFeaturedProducts, getCategories, getSiteContent } from '@/lib/supabase';
 import { ShieldCheck, Truck, Star, MessageCircle } from 'lucide-react';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 const CATEGORY_IMAGES: Record<string, string> = {
   watches: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
