@@ -80,22 +80,22 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-screen">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 min-h-screen">
         {/* ─── Page title ──────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <div className="accent-line">
-            <h1 className="text-4xl font-black uppercase tracking-tight">Admin Dashboard</h1>
-            <p className="text-sm text-gray-400 mt-1">{adminEmail}</p>
+            <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight leading-tight">Admin</h1>
           </div>
           <button
             onClick={handleSignOut}
             disabled={signing}
-            className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-xs font-bold uppercase tracking-widest hover:border-gray-400 transition-colors shrink-0 self-start"
+            className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-200 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:border-gray-400 hover:text-red-500 transition-colors shrink-0 rounded"
           >
-            <LogOut size={14} />
-            {signing ? 'Signing out…' : 'Sign Out'}
+            <LogOut size={13} />
+            {signing ? '…' : 'Sign Out'}
           </button>
         </div>
+        {adminEmail && <p className="text-xs text-gray-400 -mt-4 mb-6">{adminEmail}</p>}
 
         {/* ─── Tab navigation (matches screenshot) ─────────────────────── */}
         <div className="border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar">

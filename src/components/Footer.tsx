@@ -20,7 +20,7 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-10 grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="py-8 sm:py-10 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
 
           {/* Brand */}
           <div>
@@ -91,15 +91,16 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-100 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-400">
-          <span>© 2026 WATCHGALORE265. CRAFTED IN MALAWI.</span>
-          <div className="flex items-center gap-3">
+        <div className="border-t border-gray-100 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-1.5 text-[10px] sm:text-xs text-gray-400 text-center sm:text-left">
+          <span>© 2026 WATCHGALORE265</span>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <span className="hidden sm:inline">·</span>
             <Link href="/admin/dashboard" className="hover:text-accent transition-colors uppercase tracking-wider">
               Admin
             </Link>
             <span>·</span>
-            <a href="https://operon-website.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors uppercase tracking-wider">
-              POWERED BY OPERON SYSTEMS
+            <a href="https://operon-website.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors uppercase tracking-wider whitespace-nowrap">
+              Powered by Operon
             </a>
           </div>
         </div>
