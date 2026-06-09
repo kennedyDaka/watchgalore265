@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
 import { getFeaturedProducts, getCategories, getSiteContent } from '@/lib/supabase';
-import { ShieldCheck, Truck, Star, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Truck, Star, Headphones } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +27,7 @@ const DEFAULT_TRUST = [
   { title: 'WhatsApp Support', desc: 'Chat with us anytime for order support.' },
 ];
 
-const TRUST_ICONS = [Truck, ShieldCheck, MessageCircle];
+const TRUST_ICONS = [Truck, ShieldCheck, Headphones];
 
 export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
@@ -55,9 +55,6 @@ export default async function HomePage() {
   const promoItems = promo.items || ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'];
   const ctaHeading = cta.heading || 'Ready to Elevate Your Style?';
   const ctaSubtitle = cta.subtitle || 'Browse our collection and place your order directly on WhatsApp in minutes.';
-
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
-  const waMsg = encodeURIComponent('Hello WatchGalore265 👋 I would like to enquire about your products.');
 
   return (
     <>
@@ -111,15 +108,6 @@ export default async function HomePage() {
             >
               Shop Now
             </Link>
-            <a
-              href={`https://wa.me/${whatsappNumber}?text=${waMsg}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3.5 bg-whatsapp text-white font-bold text-sm tracking-widest uppercase hover:bg-green-600 transition-colors flex items-center justify-center gap-2.5 w-full sm:w-auto"
-            >
-              <MessageCircle size={16} />
-              Chat on WhatsApp
-            </a>
           </div>
         </div>
 
@@ -265,19 +253,10 @@ export default async function HomePage() {
           <p className="text-gray-400 text-sm mb-8">
             {ctaSubtitle}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex justify-center">
             <Link href="/shop" className="px-8 py-3.5 bg-white text-black font-bold text-xs tracking-widest uppercase hover:bg-gray-100 transition-colors">
               Browse Collection
             </Link>
-            <a
-              href={`https://wa.me/${whatsappNumber}?text=${waMsg}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3.5 bg-whatsapp text-white font-bold text-xs tracking-widest uppercase hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
-            >
-              <MessageCircle size={14} />
-              Chat on WhatsApp
-            </a>
           </div>
         </div>
       </section>

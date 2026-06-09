@@ -10,7 +10,6 @@ import { useCart } from '@/context/CartContext';
 import { createOrder } from '@/lib/supabase';
 import { formatMK } from '@/components/ProductCard';
 import { CheckoutFormData, DeliveryMethod } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
 
 const DELIVERY_OPTIONS: { value: DeliveryMethod; label: string; fee: number; desc: string }[] = [
   { value: 'same_day', label: 'Same Day Delivery', fee: 2000, desc: 'Available in Lilongwe. Order before 2PM.' },
@@ -116,10 +115,10 @@ export default function CheckoutPage() {
       setSubmitting(false);
     }
 
-    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265993000000';
+    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
     const waUrl = `https://wa.me/${waNumber}?text=${buildWhatsAppMessage()}`;
     clearCart();
-    window.open(waUrl, '_blank');
+    window.location.href = waUrl;
   };
 
   if (items.length === 0 && step < 2) {
@@ -143,17 +142,17 @@ export default function CheckoutPage() {
     <>
       <Navbar />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link href="/shop" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-accent uppercase tracking-widest mb-8 transition-colors">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <Link href="/shop" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-accent uppercase tracking-widest mb-6 sm:mb-8 transition-colors">
           <ChevronLeft size={14} /> Continue Shopping
         </Link>
 
-        <div className="accent-line mb-8">
-          <h1 className="text-3xl font-black uppercase tracking-tight">Checkout</h1>
+        <div className="accent-line mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">Checkout</h1>
         </div>
 
         {/* Step indicators */}
-        <div className="flex items-center gap-0 mb-10">
+        <div className="flex items-center gap-0 mb-6 sm:mb-10">
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center flex-1">
               <div className="flex items-center gap-2">
@@ -177,7 +176,7 @@ export default function CheckoutPage() {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_380px] gap-8">
+        <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-8">
           {/* Left — step content */}
           <div>
             {/* Step 0 — Customer Info */}
@@ -331,8 +330,8 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Right — Cart summary */}
-          <div className="lg:sticky lg:top-24 h-fit">
+          {/* Right — Cart summary (hidden on mobile, shown on lg) */}
+          <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
             <div className="border border-gray-100 p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">
                 Cart ({items.length} {items.length === 1 ? 'item' : 'items'})

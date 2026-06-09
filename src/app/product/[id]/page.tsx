@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingBag, MessageCircle, ChevronLeft, ZoomIn } from 'lucide-react';
+import { ShoppingBag, ChevronLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
 import { getProductById, getProducts } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
@@ -66,11 +65,6 @@ export default function ProductPage() {
       ? product.images
       : ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'];
 
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265993000000';
-  const waMsg = encodeURIComponent(
-    `Hello WatchGalore265 👋\n\nI would like to reserve:\n\n*${product.name}* — ${formatMK(product.price)}\n\nPlease confirm availability.`
-  );
-
   const handleAddToCart = () => {
     addItem(product, quantity);
     toast.success(`${product.name} added to cart`);
@@ -93,18 +87,15 @@ export default function ProductPage() {
         <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
           {/* Image gallery */}
           <div>
-            <div className="relative aspect-square bg-gray-50 overflow-hidden mb-3 group">
+            <div className="relative aspect-square bg-gray-50 overflow-hidden mb-3">
               <Image
                 src={images[activeImage]}
                 alt={product.name}
                 fill
-                className="object-cover group-hover:scale-102 transition-transform duration-500"
+                className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-              <button className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-white p-2 shadow">
-                <ZoomIn size={16} className="text-gray-600" />
-              </button>
               {product.stock === 0 && (
                 <div className="absolute inset-0 bg-white/75 flex items-center justify-center">
                   <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Sold Out</span>
@@ -193,16 +184,6 @@ export default function ProductPage() {
                     <ShoppingBag size={16} />
                     Add to Cart
                   </button>
-
-                  <a
-                    href={`https://wa.me/${whatsappNumber}?text=${waMsg}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2.5 bg-whatsapp text-white py-3.5 font-bold text-xs tracking-widest uppercase hover:bg-green-600 transition-colors"
-                  >
-                    <MessageCircle size={16} />
-                    Reserve on WhatsApp
-                  </a>
                 </>
               )}
 
@@ -238,7 +219,6 @@ export default function ProductPage() {
       </main>
 
       <Footer />
-      <WhatsAppButton />
     </>
   );
 }
