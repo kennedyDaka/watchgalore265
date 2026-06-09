@@ -1,0 +1,29 @@
+import type { Metadata } from 'next';
+import './globals.css';
+import { CartProvider } from '@/context/CartContext';
+import { Toaster } from 'react-hot-toast';
+
+export const metadata: Metadata = {
+  title: 'WatchGalore265 — Premium Watches, Wallets & Belts',
+  description: "Malawi's home for premium watches, wallets and belts. Order via WhatsApp.",
+  keywords: 'watches, wallets, belts, Malawi, luxury accessories, WatchGalore265',
+  openGraph: {
+    title: 'WatchGalore265',
+    description: "Malawi's home for premium watches, wallets and belts.",
+    type: 'website',
+    locale: 'en_MW',
+  },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <CartProvider>
+          {children}
+          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        </CartProvider>
+      </body>
+    </html>
+  );
+}
