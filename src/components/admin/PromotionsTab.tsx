@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Save, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
-import { getSiteContent, upsertSiteContent } from '@/lib/supabase';
+import { Save, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Upload } from 'lucide-react';
+import { getSiteContent, upsertSiteContent, supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface TrustItem {
@@ -46,6 +46,7 @@ export default function PromotionsTab() {
   const [heroHeading, setHeroHeading] = useState(DEFAULTS.hero.heading);
   const [heroSubtitle, setHeroSubtitle] = useState(DEFAULTS.hero.subtitle);
   const [heroBg, setHeroBg] = useState(DEFAULTS.hero.bgImage);
+  const [heroBgUploading, setHeroBgUploading] = useState(false);
 
   // Promo banner
   const [promoItems, setPromoItems] = useState<string[]>(DEFAULTS.promo_banner.items);
@@ -188,9 +189,48 @@ export default function PromotionsTab() {
                     <textarea value={heroSubtitle} onChange={e => setHeroSubtitle(e.target.value)} rows={2}
                       placeholder="Hand-picked watches..." className="input-base resize-none" />
                   </Field>
-                  <Field label="Background Image URL">
+                  <Field label="Background Image">
+                    {heroBg && (
+                      <div className="relative mb-2 w-full aspect-video bg-gray-100 overflow-hidden">
+                        <img src={heroBg} alt="Hero background" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <label className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-dashed border-gray-300 bg-gray-50 text-xs font-semibold text-gray-500 hover:border-accent hover:text-accent cursor-pointer transition-colors">
+                      <Upload size={14} />
+                      {heroBgUploading ? 'Uploading…' : 'Upload Image'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={heroBgUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setHeroBgUploading(true);
+                          try {
+                            const ext = file.name.split('.').pop();
+                            const path = `site-content/hero-bg-${Date.now()}.${ext}`;
+                            const { error: uploadErr } = await supabase.storage
+                              .from('product-images')
+                              .upload(path, file);
+                            if (uploadErr) throw uploadErr;
+                            const { data } = supabase.storage
+                              .from('product-images')
+                              .getPublicUrl(path);
+                            setHeroBg(data.publicUrl);
+                            toast.success('Image uploaded');
+                          } catch (err: unknown) {
+                            const msg = err instanceof Error ? err.message : 'Upload failed';
+                            toast.error(msg);
+                          } finally {
+                            setHeroBgUploading(false);
+                          }
+                        }}
+                      />
+                    </label>
+                    <p className="text-[10px] text-gray-400 mt-1.5">Or paste a URL:</p>
                     <input value={heroBg} onChange={e => setHeroBg(e.target.value)}
-                      placeholder="https://images.unsplash.com/..." className="input-base" />
+                      placeholder="https://images.unsplash.com/..." className="input-base mt-1" />
                   </Field>
                 </>
               )}

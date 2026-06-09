@@ -57,13 +57,35 @@ export default function CheckoutPage() {
     setStep(s => s + 1);
   };
 
+  const getCategoryEmoji = (category?: string) => {
+    const c = (category || '').toLowerCase();
+    if (c.includes('watch')) return '\u231A';
+    if (c.includes('wallet')) return '\uD83D\uDC5C';
+    if (c.includes('belt')) return '\uD83D\uDC53';
+    return '\uD83D\uDCE6';
+  };
+
   const buildWhatsAppMessage = () => {
     const itemLines = items
-      .map((i, idx) => `${idx + 1}. ${i.product.name} x${i.quantity} — ${formatMK(i.product.price * i.quantity)}`)
+      .map((i) => `${getCategoryEmoji(i.product.category)} ${i.product.name} \u00D7${i.quantity} \u2014 ${formatMK(i.product.price * i.quantity)}`)
       .join('\n');
 
+    const deliveryLabel = selectedDelivery.label;
+    const notesBlock = form.deliveryNotes ? `\n\n\u{1F4DD} Notes\n${form.deliveryNotes}` : '';
+
     return encodeURIComponent(
-      `Hello WatchGalore265 👋\n\nI would like to place an order:\n\nORDER #${orderId}\n\n${itemLines}\n\nSubtotal: ${formatMK(totalPrice)}\nDelivery (${selectedDelivery.label}): ${deliveryFee === 0 ? 'FREE' : formatMK(deliveryFee)}\n*Total: ${formatMK(grandTotal)}*\n\nCustomer Details:\nName: ${form.fullName}\nLocation: ${form.location}\nPhone: ${form.phone}${form.deliveryNotes ? '\nNotes: ' + form.deliveryNotes : ''}\n\nDelivery Method:\n${selectedDelivery.label}\n\nThank you.`
+      `\uD83D\uDED2 NEW ORDER #${orderId}\n\n` +
+      `\uD83D\uDC64 Customer\n${form.fullName}\n` +
+      `\uD83D\uDCDE ${form.phone}\n` +
+      `\uD83D\uDCCD ${form.location}\n\n` +
+      `\uD83D\uDED2 Items\n${itemLines}\n\n` +
+      `\uD83D\uDCB0 Total\n` +
+      `Subtotal: ${formatMK(totalPrice)}\n` +
+      `Delivery: ${deliveryFee === 0 ? 'FREE' : formatMK(deliveryFee)}\n` +
+      `Total: ${formatMK(grandTotal)}\n\n` +
+      `\uD83D\uDE9A Delivery\n${deliveryLabel}\n${form.location}` +
+      `${notesBlock}\n\n` +
+      `\u231A WatchGalore265\nTimeless Style. Delivered.`
     );
   };
 
