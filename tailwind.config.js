@@ -15,6 +15,7 @@ const config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-bebas)", "sans-serif"],
       },
       keyframes: {
         fadeIn: {

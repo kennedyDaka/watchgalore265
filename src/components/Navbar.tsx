@@ -25,21 +25,21 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/" className="flex items-center gap-3 shrink-0">
             <Image
               src="/logo.jpg"
               alt="WatchGalore265 logo"
-              width={44}
-              height={44}
+              width={52}
+              height={52}
               className="object-contain"
               priority
             />
             <div className="leading-none">
-              <div className="text-lg font-black tracking-tight uppercase">
+              <div className="text-xl font-heading tracking-tight">
                 WATCHGALORE
                 <span className="text-accent">265</span>
               </div>
-              <div className="text-[9px] tracking-widest text-gray-500 uppercase font-medium mt-0.5">
+              <div className="text-[10px] tracking-widest text-gray-500 font-heading mt-0.5">
                 And Other Men&apos;s Essentials
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-xs font-semibold tracking-widest uppercase transition-colors hover:text-accent ${
+                className={`text-sm font-heading tracking-widest transition-colors hover:text-accent ${
                   pathname === link.href.split('?')[0] && link.label === 'SHOP'
                     ? 'text-accent'
                     : 'text-gray-700'
