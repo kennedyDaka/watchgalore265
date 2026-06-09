@@ -51,7 +51,7 @@ export default async function HomePage() {
   const heroBadge = hero.badge || 'Free Same-Day Delivery in Lilongwe';
   const heroHeading = hero.heading || 'Wear Time. Define Style.';
   const heroSubtitle = hero.subtitle || 'Hand-picked watches, wallets and belts for the modern Malawian gentleman. Order in minutes via WhatsApp.';
-  const heroBgImage = hero.bgImage || 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80';
+  const heroBgImage = (hero.bgImage || 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80') + (hero.bgImage ? `?v=${(content._updatedAt as string) || ''}` : '');
   const promoItems = promo.items || ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'];
   const ctaHeading = cta.heading || 'Ready to Elevate Your Style?';
   const ctaSubtitle = cta.subtitle || 'Browse our collection and place your order directly on WhatsApp in minutes.';

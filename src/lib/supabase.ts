@@ -354,15 +354,18 @@ export async function getSiteContent(): Promise<Record<string, unknown>> {
   try {
     const { data, error } = await supabase
       .from('site_content')
-      .select('key, value');
+      .select('key, value, updated_at');
     if (error) {
       console.error('getSiteContent error:', error.message);
       return {};
     }
     const map: Record<string, unknown> = {};
-    (data || []).forEach((row: { key: string; value: unknown }) => {
+    let latestUpdate = '';
+    (data || []).forEach((row: { key: string; value: unknown; updated_at?: string }) => {
       map[row.key] = row.value;
+      if (row.updated_at && row.updated_at > latestUpdate) latestUpdate = row.updated_at;
     });
+    map._updatedAt = latestUpdate;
     return map;
   } catch (e) {
     console.error('getSiteContent failed:', e);
