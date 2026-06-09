@@ -9,6 +9,10 @@ cloudinary.config({
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return NextResponse.json({ error: 'Cloudinary API key/secret not configured on server' }, { status: 500 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const folder = (formData.get('folder') as string) || 'watchgalore';
@@ -33,7 +37,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: result.secure_url });
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Upload failed';
+    console.error('Cloudinary upload error:', e);
+    const msg = e instanceof Error ? e.message : JSON.stringify(e);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
