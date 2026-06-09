@@ -9,7 +9,7 @@ import { ShieldCheck, Truck, Star, Headphones } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-const CATEGORY_IMAGES: Record<string, string> = {
+const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
   watches: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
   wallets: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&q=80',
   belts: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80',
@@ -55,6 +55,7 @@ export default async function HomePage() {
   const promoItems = promo.items || ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'];
   const ctaHeading = cta.heading || 'Ready to Elevate Your Style?';
   const ctaSubtitle = cta.subtitle || 'Browse our collection and place your order directly on WhatsApp in minutes.';
+  const catImages = (content.category_images || {}) as Record<string, string>;
 
   return (
     <>
@@ -150,7 +151,7 @@ export default async function HomePage() {
                 className="relative group overflow-hidden aspect-[4/3] bg-gray-100"
               >
                 <Image
-                  src={CATEGORY_IMAGES[cat.slug] || CATEGORY_IMAGES.watches}
+                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || DEFAULT_CATEGORY_IMAGES.watches}
                   alt={cat.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"

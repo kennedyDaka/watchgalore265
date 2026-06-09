@@ -17,10 +17,11 @@ interface TestimonialItem {
   stars: number;
 }
 
-type Section = 'hero' | 'promo_banner' | 'trust' | 'testimonials' | 'cta';
+type Section = 'hero' | 'promo_banner' | 'trust' | 'testimonials' | 'cta' | 'category_images';
 
 const SECTIONS: { key: Section; label: string }[] = [
   { key: 'hero', label: 'Hero Section' },
+  { key: 'category_images', label: 'Collection Images' },
   { key: 'promo_banner', label: 'Promo Marquee Banner' },
   { key: 'trust', label: 'Trust Indicators' },
   { key: 'testimonials', label: 'Testimonials' },
@@ -61,6 +62,10 @@ export default function PromotionsTab() {
   const [ctaHeading, setCtaHeading] = useState(DEFAULTS.cta.heading);
   const [ctaSubtitle, setCtaSubtitle] = useState(DEFAULTS.cta.subtitle);
 
+  // Category images
+  const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
+  const [categoryImagesUploading, setCategoryImagesUploading] = useState<Record<string, boolean>>({});
+
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
@@ -87,6 +92,9 @@ export default function PromotionsTab() {
         const cta = (data.cta || {}) as Record<string, string>;
         setCtaHeading(cta.heading || DEFAULTS.cta.heading);
         setCtaSubtitle(cta.subtitle || DEFAULTS.cta.subtitle);
+
+        const catImg = (data.category_images || {}) as Record<string, string>;
+        setCategoryImages(catImg);
       }
     } catch (e) {
       console.error('Failed to load site content:', e);
@@ -121,6 +129,9 @@ export default function PromotionsTab() {
           break;
         case 'cta':
           await upsertSiteContent('cta', { heading: ctaHeading, subtitle: ctaSubtitle });
+          break;
+        case 'category_images':
+          await upsertSiteContent('category_images', categoryImages);
           break;
       }
       toast.success('Saved');
@@ -232,6 +243,65 @@ export default function PromotionsTab() {
                     <input value={heroBg} onChange={e => setHeroBg(e.target.value)}
                       placeholder="https://images.unsplash.com/..." className="input-base mt-1" />
                   </Field>
+                </>
+              )}
+
+              {/* CATEGORY IMAGES */}
+              {section.key === 'category_images' && (
+                <>
+                  <p className="text-xs text-gray-400">Upload images for each collection shown on the homepage.</p>
+                  {['watches', 'wallets', 'belts'].map(slug => (
+                    <div key={slug} className="border border-gray-100 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{slug}</span>
+                      </div>
+                      {categoryImages[slug] && (
+                        <div className="relative mb-2 w-full aspect-video bg-gray-100 overflow-hidden">
+                          <img src={categoryImages[slug]} alt={slug} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <label className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-dashed border-gray-300 bg-gray-50 text-xs font-semibold text-gray-500 hover:border-accent hover:text-accent cursor-pointer transition-colors">
+                        <Upload size={14} />
+                        {categoryImagesUploading[slug] ? 'Uploading…' : 'Upload Image'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={categoryImagesUploading[slug]}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setCategoryImagesUploading(prev => ({ ...prev, [slug]: true }));
+                            try {
+                              const ext = file.name.split('.').pop();
+                              const path = `site-content/cat-${slug}-${Date.now()}.${ext}`;
+                              const { error: uploadErr } = await supabase.storage
+                                .from('product-images')
+                                .upload(path, file);
+                              if (uploadErr) throw uploadErr;
+                              const { data } = supabase.storage
+                                .from('product-images')
+                                .getPublicUrl(path);
+                              setCategoryImages(prev => ({ ...prev, [slug]: data.publicUrl }));
+                              toast.success('Image uploaded');
+                            } catch (err: unknown) {
+                              const msg = err instanceof Error ? err.message : 'Upload failed';
+                              toast.error(msg);
+                            } finally {
+                              setCategoryImagesUploading(prev => ({ ...prev, [slug]: false }));
+                            }
+                          }}
+                        />
+                      </label>
+                      <p className="text-[10px] text-gray-400 mt-1.5">Or paste a URL:</p>
+                      <input
+                        value={categoryImages[slug] || ''}
+                        onChange={e => setCategoryImages(prev => ({ ...prev, [slug]: e.target.value }))}
+                        placeholder="https://images.unsplash.com/..."
+                        className="input-base mt-1"
+                      />
+                    </div>
+                  ))}
                 </>
               )}
 
