@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, MessageCircle, Check, ShoppingBag } from 'lucide-react';
@@ -36,6 +36,10 @@ export default function CheckoutPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [step]);
 
   const selectedDelivery = DELIVERY_OPTIONS.find(d => d.value === form.deliveryMethod)!;
   const deliveryFee = selectedDelivery.fee;
@@ -115,7 +119,7 @@ export default function CheckoutPage() {
       setSubmitting(false);
     }
 
-    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
+    const waNumber = '265888810581';
     const waUrl = `https://wa.me/${waNumber}?text=${buildWhatsAppMessage()}`;
     clearCart();
     window.location.href = waUrl;
