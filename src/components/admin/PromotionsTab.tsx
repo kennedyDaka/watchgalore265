@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Save, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { getSiteContent, upsertSiteContent } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -27,56 +27,69 @@ const SECTIONS: { key: Section; label: string }[] = [
   { key: 'cta', label: 'CTA Banner' },
 ];
 
+const DEFAULTS = {
+  hero: { badge: 'Free Same-Day Delivery in Lilongwe', heading: 'Wear Time. Define Style.', subtitle: 'Hand-picked watches, wallets and belts for the modern Malawian gentleman. Order in minutes via WhatsApp.', bgImage: 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80' },
+  promo_banner: { items: ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'] },
+  trust: { items: [{ title: 'Same-Day Delivery', desc: 'Available in Lilongwe. Order before 2PM.' }, { title: 'Authenticity Guaranteed', desc: '100% genuine products. No counterfeits.' }, { title: 'WhatsApp Support', desc: 'Chat with us anytime for order support.' }] },
+  testimonials: { items: [{ name: 'James M.', location: 'Lilongwe', text: 'The chronograph I ordered arrived perfectly packaged. Quality is outstanding for the price. Will order again!', stars: 5 }, { name: 'David K.', location: 'Blantyre', text: 'Ordering via WhatsApp was so easy. Got my watch the same day. Very impressed with the service.', stars: 5 }, { name: 'Chris P.', location: 'Mzuzu', text: 'Bought a wallet as a gift for my brother. He loved it. Looks very premium and leather quality is great.', stars: 5 }] },
+  cta: { heading: 'Ready to Elevate Your Style?', subtitle: 'Browse our collection and place your order directly on WhatsApp in minutes.' },
+};
+
 export default function PromotionsTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState<Section | null>('hero');
+  const [dbConnected, setDbConnected] = useState<boolean | null>(null);
 
   // Hero
-  const [heroBadge, setHeroBadge] = useState('');
-  const [heroHeading, setHeroHeading] = useState('');
-  const [heroSubtitle, setHeroSubtitle] = useState('');
-  const [heroBg, setHeroBg] = useState('');
+  const [heroBadge, setHeroBadge] = useState(DEFAULTS.hero.badge);
+  const [heroHeading, setHeroHeading] = useState(DEFAULTS.hero.heading);
+  const [heroSubtitle, setHeroSubtitle] = useState(DEFAULTS.hero.subtitle);
+  const [heroBg, setHeroBg] = useState(DEFAULTS.hero.bgImage);
 
   // Promo banner
-  const [promoItems, setPromoItems] = useState<string[]>([]);
+  const [promoItems, setPromoItems] = useState<string[]>(DEFAULTS.promo_banner.items);
 
   // Trust
-  const [trustItems, setTrustItems] = useState<TrustItem[]>([]);
+  const [trustItems, setTrustItems] = useState<TrustItem[]>(DEFAULTS.trust.items);
 
   // Testimonials
-  const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(DEFAULTS.testimonials.items);
 
   // CTA
-  const [ctaHeading, setCtaHeading] = useState('');
-  const [ctaSubtitle, setCtaSubtitle] = useState('');
+  const [ctaHeading, setCtaHeading] = useState(DEFAULTS.cta.heading);
+  const [ctaSubtitle, setCtaSubtitle] = useState(DEFAULTS.cta.subtitle);
 
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getSiteContent();
+      const hasData = Object.keys(data).length > 0;
+      setDbConnected(hasData);
 
-      const hero = (data.hero || {}) as Record<string, string>;
-      setHeroBadge(hero.badge || '');
-      setHeroHeading(hero.heading || '');
-      setHeroSubtitle(hero.subtitle || '');
-      setHeroBg(hero.bgImage || '');
+      if (hasData) {
+        const hero = (data.hero || {}) as Record<string, string>;
+        setHeroBadge(hero.badge || DEFAULTS.hero.badge);
+        setHeroHeading(hero.heading || DEFAULTS.hero.heading);
+        setHeroSubtitle(hero.subtitle || DEFAULTS.hero.subtitle);
+        setHeroBg(hero.bgImage || DEFAULTS.hero.bgImage);
 
-      const promo = (data.promo_banner || {}) as Record<string, string[]>;
-      setPromoItems(promo.items || []);
+        const promo = (data.promo_banner || {}) as Record<string, string[]>;
+        setPromoItems(promo.items || DEFAULTS.promo_banner.items);
 
-      const trust = (data.trust || {}) as Record<string, TrustItem[]>;
-      setTrustItems(trust.items || []);
+        const trust = (data.trust || {}) as Record<string, TrustItem[]>;
+        setTrustItems(trust.items || DEFAULTS.trust.items);
 
-      const test = (data.testimonials || {}) as Record<string, TestimonialItem[]>;
-      setTestimonials(test.items || []);
+        const test = (data.testimonials || {}) as Record<string, TestimonialItem[]>;
+        setTestimonials(test.items || DEFAULTS.testimonials.items);
 
-      const cta = (data.cta || {}) as Record<string, string>;
-      setCtaHeading(cta.heading || '');
-      setCtaSubtitle(cta.subtitle || '');
+        const cta = (data.cta || {}) as Record<string, string>;
+        setCtaHeading(cta.heading || DEFAULTS.cta.heading);
+        setCtaSubtitle(cta.subtitle || DEFAULTS.cta.subtitle);
+      }
     } catch (e) {
       console.error('Failed to load site content:', e);
-      toast.error('Failed to load homepage content');
+      setDbConnected(false);
     } finally {
       setLoading(false);
     }
@@ -132,9 +145,19 @@ export default function PromotionsTab() {
 
   return (
     <div className="max-w-3xl">
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 mb-4">
         Edit everything that appears on the homepage. Changes go live immediately.
       </p>
+
+      {dbConnected === false && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-4 py-3 mb-6 flex items-start gap-2">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-bold mb-1">Could not load from database</p>
+            <p>The <code>site_content</code> table may not exist yet. Run the SQL migration in your Supabase Dashboard → SQL Editor. The form below shows defaults — you can edit and save, and it will create the table data automatically.</p>
+          </div>
+        </div>
+      )}
 
       {SECTIONS.map(section => (
         <div key={section.key} className="border border-gray-100 mb-3">
@@ -157,7 +180,7 @@ export default function PromotionsTab() {
                     <input value={heroBadge} onChange={e => setHeroBadge(e.target.value)}
                       placeholder="Free Same-Day Delivery in Lilongwe" className="input-base" />
                   </Field>
-                  <Field label="Heading (e.g. Wear Time. Define Style.)">
+                  <Field label="Heading">
                     <input value={heroHeading} onChange={e => setHeroHeading(e.target.value)}
                       placeholder="Wear Time. Define Style." className="input-base" />
                   </Field>

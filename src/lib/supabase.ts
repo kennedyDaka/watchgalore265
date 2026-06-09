@@ -348,15 +348,23 @@ export async function uploadProductImage(file: File, productId: string) {
 // ─── Site Content (editable homepage) ────────────────────────────
 
 export async function getSiteContent(): Promise<Record<string, unknown>> {
-  const { data, error } = await supabase
-    .from('site_content')
-    .select('key, value');
-  if (error) throw error;
-  const map: Record<string, unknown> = {};
-  (data || []).forEach((row: { key: string; value: unknown }) => {
-    map[row.key] = row.value;
-  });
-  return map;
+  try {
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('key, value');
+    if (error) {
+      console.error('getSiteContent error:', error.message);
+      return {};
+    }
+    const map: Record<string, unknown> = {};
+    (data || []).forEach((row: { key: string; value: unknown }) => {
+      map[row.key] = row.value;
+    });
+    return map;
+  } catch (e) {
+    console.error('getSiteContent failed:', e);
+    return {};
+  }
 }
 
 export async function getSiteContentKey(key: string): Promise<unknown> {
