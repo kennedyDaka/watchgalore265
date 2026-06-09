@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Upload } from 'lucide-react';
-import { getSiteContent, upsertSiteContent, supabase } from '@/lib/supabase';
+import { getSiteContent, upsertSiteContent } from '@/lib/supabase';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import toast from 'react-hot-toast';
 
 interface TrustItem {
@@ -219,16 +220,8 @@ export default function PromotionsTab() {
                           if (!file) return;
                           setHeroBgUploading(true);
                           try {
-                            const ext = file.name.split('.').pop();
-                            const path = `site-content/hero-bg-${Date.now()}.${ext}`;
-                            const { error: uploadErr } = await supabase.storage
-                              .from('product-images')
-                              .upload(path, file);
-                            if (uploadErr) throw uploadErr;
-                            const { data } = supabase.storage
-                              .from('product-images')
-                              .getPublicUrl(path);
-                            setHeroBg(data.publicUrl);
+                            const url = await uploadToCloudinary(file, 'site-content');
+                            setHeroBg(url);
                             toast.success('Image uploaded');
                           } catch (err: unknown) {
                             const msg = err instanceof Error ? err.message : 'Upload failed';
@@ -273,16 +266,8 @@ export default function PromotionsTab() {
                             if (!file) return;
                             setCategoryImagesUploading(prev => ({ ...prev, [slug]: true }));
                             try {
-                              const ext = file.name.split('.').pop();
-                              const path = `site-content/cat-${slug}-${Date.now()}.${ext}`;
-                              const { error: uploadErr } = await supabase.storage
-                                .from('product-images')
-                                .upload(path, file);
-                              if (uploadErr) throw uploadErr;
-                              const { data } = supabase.storage
-                                .from('product-images')
-                                .getPublicUrl(path);
-                              setCategoryImages(prev => ({ ...prev, [slug]: data.publicUrl }));
+                              const url = await uploadToCloudinary(file, `site-content/${slug}`);
+                              setCategoryImages(prev => ({ ...prev, [slug]: url }));
                               toast.success('Image uploaded');
                             } catch (err: unknown) {
                               const msg = err instanceof Error ? err.message : 'Upload failed';

@@ -151,7 +151,7 @@ export default async function HomePage() {
                 className="relative group overflow-hidden aspect-[4/3] bg-gray-100"
               >
                 <Image
-                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || DEFAULT_CATEGORY_IMAGES.watches}
+                  src={(catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || DEFAULT_CATEGORY_IMAGES.watches) + (catImages[cat.slug] ? `?v=${(content._updatedAt as string) || ''}` : '')}
                   alt={cat.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"

@@ -1,4 +1,5 @@
 import { createClient, Session } from '@supabase/supabase-js';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
@@ -335,17 +336,7 @@ export async function deleteCategory(id: string) {
 }
 
 export async function uploadProductImage(file: File, productId: string) {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${productId}-${Date.now()}.${fileExt}`;
-  const { error } = await supabase.storage
-    .from('product-images')
-    .upload(fileName, file);
-  if (error) throw error;
-
-  const { data } = supabase.storage
-    .from('product-images')
-    .getPublicUrl(fileName);
-  return data.publicUrl;
+  return uploadToCloudinary(file, `products/${productId}`);
 }
 
 // ─── Site Content (editable homepage) ────────────────────────────
