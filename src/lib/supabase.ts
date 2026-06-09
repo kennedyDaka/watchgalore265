@@ -344,3 +344,35 @@ export async function uploadProductImage(file: File, productId: string) {
     .getPublicUrl(fileName);
   return data.publicUrl;
 }
+
+// ─── Site Content (editable homepage) ────────────────────────────
+
+export async function getSiteContent(): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase
+    .from('site_content')
+    .select('key, value');
+  if (error) throw error;
+  const map: Record<string, unknown> = {};
+  (data || []).forEach((row: { key: string; value: unknown }) => {
+    map[row.key] = row.value;
+  });
+  return map;
+}
+
+export async function getSiteContentKey(key: string): Promise<unknown> {
+  const { data, error } = await supabase
+    .from('site_content')
+    .select('value')
+    .eq('key', key)
+    .single();
+  if (error) throw error;
+  return data?.value ?? null;
+}
+
+export async function upsertSiteContent(key: string, value: Record<string, unknown>) {
+  await requireAuth();
+  const { error } = await supabase
+    .from('site_content')
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) throw error;
+}

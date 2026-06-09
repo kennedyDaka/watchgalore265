@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
-import { getFeaturedProducts, getCategories } from '@/lib/supabase';
+import { getFeaturedProducts, getCategories, getSiteContent } from '@/lib/supabase';
 import { ShieldCheck, Truck, Star, MessageCircle } from 'lucide-react';
 
 export const revalidate = 60;
@@ -21,21 +21,40 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   belts: 'Classic and contemporary belts',
 };
 
-const TESTIMONIALS = [
-  { name: 'James M.', location: 'Lilongwe', text: 'The chronograph I ordered arrived perfectly packaged. Quality is outstanding for the price. Will order again!', stars: 5 },
-  { name: 'David K.', location: 'Blantyre', text: 'Ordering via WhatsApp was so easy. Got my watch the same day. Very impressed with the service.', stars: 5 },
-  { name: 'Chris P.', location: 'Mzuzu', text: 'Bought a wallet as a gift for my brother. He loved it. Looks very premium and leather quality is great.', stars: 5 },
+const DEFAULT_TRUST = [
+  { title: 'Same-Day Delivery', desc: 'Available in Lilongwe. Order before 2PM.' },
+  { title: 'Authenticity Guaranteed', desc: '100% genuine products. No counterfeits.' },
+  { title: 'WhatsApp Support', desc: 'Chat with us anytime for order support.' },
 ];
+
+const TRUST_ICONS = [Truck, ShieldCheck, MessageCircle];
 
 export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
   let categories: Awaited<ReturnType<typeof getCategories>> = [];
+  let content: Record<string, unknown> = {};
   try {
-    [featuredProducts, categories] = await Promise.all([
+    [featuredProducts, categories, content] = await Promise.all([
       getFeaturedProducts(),
       getCategories(),
+      getSiteContent(),
     ]);
   } catch {}
+
+  // Parse site content with safe defaults
+  const hero = (content.hero || {}) as Record<string, string>;
+  const promo = (content.promo_banner || {}) as Record<string, string[]>;
+  const trust = ((content.trust || {}) as Record<string, unknown[]>).items || DEFAULT_TRUST;
+  const testimonials = ((content.testimonials || {}) as Record<string, unknown[]>).items || [];
+  const cta = (content.cta || {}) as Record<string, string>;
+
+  const heroBadge = hero.badge || 'Free Same-Day Delivery in Lilongwe';
+  const heroHeading = hero.heading || 'Wear Time. Define Style.';
+  const heroSubtitle = hero.subtitle || 'Hand-picked watches, wallets and belts for the modern Malawian gentleman. Order in minutes via WhatsApp.';
+  const heroBgImage = hero.bgImage || 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80';
+  const promoItems = promo.items || ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'];
+  const ctaHeading = cta.heading || 'Ready to Elevate Your Style?';
+  const ctaSubtitle = cta.subtitle || 'Browse our collection and place your order directly on WhatsApp in minutes.';
 
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
   const waMsg = encodeURIComponent('Hello WatchGalore265 👋 I would like to enquire about your products.');
@@ -48,7 +67,7 @@ export default async function HomePage() {
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-charcoal">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80"
+            src={heroBgImage}
             alt="Luxury watches"
             fill
             className="object-cover opacity-40"
@@ -59,21 +78,30 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-accent/20 border border-accent/40 text-white text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-            Free Same-Day Delivery in Lilongwe
-          </div>
+          {heroBadge && (
+            <div className="inline-flex items-center gap-2 bg-accent/20 border border-accent/40 text-white text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+              {heroBadge}
+            </div>
+          )}
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-white mb-6 leading-[0.95]">
-            Wear
-            <span className="text-accent"> Time.</span>
-            <br />
-            Define
-            <span className="text-white"> Style.</span>
+            {heroHeading.split('.').map((part, i) => {
+              const trimmed = part.trim();
+              if (!trimmed) return null;
+              return (
+                <span key={i}>
+                  {i > 0 && <><br /></>}
+                  {trimmed}
+                  {heroHeading.includes('.') ? '.' : ''}
+                  {i === 0 && ' '}
+                </span>
+              );
+            })}
           </h1>
 
           <p className="text-base sm:text-lg text-gray-300 mb-10 max-w-xl mx-auto leading-relaxed">
-            Hand-picked watches, wallets and belts for the modern Malawian gentleman. Order in minutes via WhatsApp.
+            {heroSubtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -101,22 +129,22 @@ export default async function HomePage() {
       </section>
 
       {/* ─── Promo Banner ──────────────────────────────────────────────── */}
-      <section className="bg-accent text-white py-3 overflow-hidden">
-        <div className="flex animate-[marquee_25s_linear_infinite] whitespace-nowrap gap-10 text-xs font-semibold tracking-widest uppercase">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <span key={i} className="flex items-center gap-10">
-              <span>Free Same-Day Delivery in Lilongwe</span>
-              <span className="text-white/50">✦</span>
-              <span>Premium Quality Guaranteed</span>
-              <span className="text-white/50">✦</span>
-              <span>Secure WhatsApp Checkout</span>
-              <span className="text-white/50">✦</span>
-              <span>Authentic Products Only</span>
-              <span className="text-white/50">✦</span>
-            </span>
-          ))}
-        </div>
-      </section>
+      {promoItems.length > 0 && (
+        <section className="bg-accent text-white py-3 overflow-hidden">
+          <div className="flex animate-[marquee_25s_linear_infinite] whitespace-nowrap gap-10 text-xs font-semibold tracking-widest uppercase">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <span key={i} className="flex items-center gap-10">
+                {promoItems.map((item, j) => (
+                  <span key={j} className="flex items-center gap-10">
+                    <span>{item}</span>
+                    {j < promoItems.length - 1 && <span className="text-white/50">✦</span>}
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── Categories ────────────────────────────────────────────────── */}
       {categories.length > 0 && (
@@ -185,56 +213,57 @@ export default async function HomePage() {
       <section className="bg-gray-50 py-12 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-            {[
-              { icon: Truck, title: 'Same-Day Delivery', desc: 'Available in Lilongwe. Order before 2PM.' },
-              { icon: ShieldCheck, title: 'Authenticity Guaranteed', desc: '100% genuine products. No counterfeits.' },
-              { icon: MessageCircle, title: 'WhatsApp Support', desc: 'Chat with us anytime for order support.' },
-            ].map(item => (
-              <div key={item.title} className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                  <item.icon size={22} className="text-accent" />
+            {(trust as TrustItem[]).map((item, i) => {
+              const Icon = TRUST_ICONS[i] || ShieldCheck;
+              return (
+                <div key={i} className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Icon size={22} className="text-accent" />
+                  </div>
+                  <h3 className="font-bold text-sm uppercase tracking-wide">{item.title}</h3>
+                  <p className="text-xs text-gray-500 max-w-xs">{item.desc}</p>
                 </div>
-                <h3 className="font-bold text-sm uppercase tracking-wide">{item.title}</h3>
-                <p className="text-xs text-gray-500 max-w-xs">{item.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ─── Testimonials ──────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div className="accent-line">
-          <h2 className="text-3xl font-black uppercase tracking-tight mb-1">Customer Reviews</h2>
-          <p className="text-gray-500 text-sm mb-10">What our customers say</p>
-        </div>
+      {testimonials.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="accent-line">
+            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">Customer Reviews</h2>
+            <p className="text-gray-500 text-sm mb-10">What our customers say</p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TESTIMONIALS.map(t => (
-            <div key={t.name} className="border border-gray-100 p-6 hover:border-accent/30 transition-colors">
-              <div className="flex gap-0.5 mb-4">
-                {Array.from({ length: t.stars }).map((_, i) => (
-                  <Star key={i} size={14} fill="#2563EB" color="#2563EB" />
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {(testimonials as TestimonialItem[]).map((t, i) => (
+              <div key={i} className="border border-gray-100 p-6 hover:border-accent/30 transition-colors">
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: t.stars || 5 }).map((_, j) => (
+                    <Star key={j} size={14} fill="#2563EB" color="#2563EB" />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide">{t.name}</p>
+                  <p className="text-xs text-gray-400">{t.location}</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide">{t.name}</p>
-                <p className="text-xs text-gray-400">{t.location}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── CTA Banner ────────────────────────────────────────────────── */}
       <section className="bg-charcoal text-white py-14 sm:py-16 text-center">
         <div className="max-w-xl mx-auto px-4">
           <h2 className="text-3xl font-black uppercase tracking-tight mb-3">
-            Ready to Elevate Your Style?
+            {ctaHeading}
           </h2>
           <p className="text-gray-400 text-sm mb-8">
-            Browse our collection and place your order directly on WhatsApp in minutes.
+            {ctaSubtitle}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/shop" className="px-8 py-3.5 bg-white text-black font-bold text-xs tracking-widest uppercase hover:bg-gray-100 transition-colors">
@@ -257,4 +286,16 @@ export default async function HomePage() {
       <WhatsAppButton />
     </>
   );
+}
+
+interface TrustItem {
+  title: string;
+  desc: string;
+}
+
+interface TestimonialItem {
+  name: string;
+  location: string;
+  text: string;
+  stars: number;
 }

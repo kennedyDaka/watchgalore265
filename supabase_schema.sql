@@ -53,6 +53,13 @@ create table if not exists public.orders (
   updated_at        timestamptz default now()
 );
 
+-- ─── Site Content (editable homepage) ─────────────────────────
+create table if not exists public.site_content (
+  key        text primary key,
+  value      jsonb not null default '{}',
+  updated_at timestamptz default now()
+);
+
 -- ─── Indexes ──────────────────────────────────────────────────
 create index if not exists products_category_idx    on public.products(category_id);
 create index if not exists products_featured_idx    on public.products(featured);
@@ -64,6 +71,7 @@ create index if not exists orders_created_idx       on public.orders(created_at 
 alter table public.categories enable row level security;
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
+alter table public.site_content enable row level security;
 
 -- Categories: anyone can read
 create policy "Public can read categories"
@@ -113,6 +121,23 @@ create policy "Admins can read orders"
 
 create policy "Admins can update orders"
   on public.orders for update
+  using (auth.role() = 'authenticated');
+
+-- Site Content: anyone can read, admins can write
+create policy "Public can read site content"
+  on public.site_content for select
+  using (true);
+
+create policy "Admins can upsert site content"
+  on public.site_content for insert
+  with check (auth.role() = 'authenticated');
+
+create policy "Admins can update site content"
+  on public.site_content for update
+  using (auth.role() = 'authenticated');
+
+create policy "Admins can delete site content"
+  on public.site_content for delete
   using (auth.role() = 'authenticated');
 
 -- ─── Storage Bucket ───────────────────────────────────────────
@@ -219,4 +244,13 @@ end $$;
 -- Supabase Dashboard > Authentication > Users > Add User
 -- Email: admin@watchgalore265.com
 -- Password: (choose a strong password)
+
+-- ─── Default Site Content ──────────────────────────────────────
+insert into public.site_content (key, value) values
+  ('hero', '{"badge":"Free Same-Day Delivery in Lilongwe","heading":"Wear Time. Define Style.","subtitle":"Hand-picked watches, wallets and belts for the modern Malawian gentleman. Order in minutes via WhatsApp.","bgImage":"https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80"}'),
+  ('promo_banner', '{"items":["Free Same-Day Delivery in Lilongwe","Premium Quality Guaranteed","Secure WhatsApp Checkout","Authentic Products Only"]}'),
+  ('trust', '{"items":[{"title":"Same-Day Delivery","desc":"Available in Lilongwe. Order before 2PM."},{"title":"Authenticity Guaranteed","desc":"100% genuine products. No counterfeits."},{"title":"WhatsApp Support","desc":"Chat with us anytime for order support."}]}'),
+  ('testimonials', '{"items":[{"name":"James M.","location":"Lilongwe","text":"The chronograph I ordered arrived perfectly packaged. Quality is outstanding for the price. Will order again!","stars":5},{"name":"David K.","location":"Blantyre","text":"Ordering via WhatsApp was so easy. Got my watch the same day. Very impressed with the service.","stars":5},{"name":"Chris P.","location":"Mzuzu","text":"Bought a wallet as a gift for my brother. He loved it. Looks very premium and leather quality is great.","stars":5}]}'),
+  ('cta', '{"heading":"Ready to Elevate Your Style?","subtitle":"Browse our collection and place your order directly on WhatsApp in minutes."}')
+on conflict (key) do nothing;
 -- ============================================================

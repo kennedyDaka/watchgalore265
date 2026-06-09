@@ -93,8 +93,8 @@ export default function CategoriesTab() {
 
       {/* Add modal */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 z-50 flex sm:items-center sm:justify-center sm:bg-black/40 sm:px-4 bg-white sm:bg-transparent">
+          <div className="bg-white w-full sm:max-w-md sm:shadow-xl min-h-screen sm:min-h-0">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-sm font-black uppercase tracking-widest">New Category</h2>
               <button onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>

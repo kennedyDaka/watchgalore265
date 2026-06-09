@@ -118,8 +118,8 @@ function ProductModal({
     setForm(f => ({ ...f, [key]: value }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-8 px-4">
-      <div className="bg-white w-full max-w-xl shadow-xl">
+    <div className="fixed inset-0 z-50 flex sm:items-start sm:justify-center sm:bg-black/40 sm:overflow-y-auto sm:py-8 sm:px-4 bg-white sm:bg-transparent">
+      <div className="bg-white w-full sm:max-w-xl sm:shadow-xl min-h-screen sm:min-h-0 sm:my-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-sm font-black uppercase tracking-widest">
