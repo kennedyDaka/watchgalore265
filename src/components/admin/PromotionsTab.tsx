@@ -18,11 +18,19 @@ interface TestimonialItem {
   stars: number;
 }
 
-type Section = 'hero' | 'promo_banner' | 'trust' | 'testimonials' | 'cta' | 'category_images';
+interface DeliveryOption {
+  value: string;
+  label: string;
+  fee: number;
+  desc: string;
+}
+
+type Section = 'hero' | 'promo_banner' | 'trust' | 'testimonials' | 'cta' | 'category_images' | 'delivery_options';
 
 const SECTIONS: { key: Section; label: string }[] = [
   { key: 'hero', label: 'Hero Section' },
   { key: 'category_images', label: 'Collection Images' },
+  { key: 'delivery_options', label: 'Delivery Options' },
   { key: 'promo_banner', label: 'Promo Marquee Banner' },
   { key: 'trust', label: 'Trust Indicators' },
   { key: 'testimonials', label: 'Testimonials' },
@@ -35,6 +43,11 @@ const DEFAULTS = {
   trust: { items: [{ title: 'Same-Day Delivery', desc: 'Available in Lilongwe. Order before 2PM.' }, { title: 'Authenticity Guaranteed', desc: '100% genuine products. No counterfeits.' }, { title: 'WhatsApp Support', desc: 'Chat with us anytime for order support.' }] },
   testimonials: { items: [{ name: 'James M.', location: 'Lilongwe', text: 'The chronograph I ordered arrived perfectly packaged. Quality is outstanding for the price. Will order again!', stars: 5 }, { name: 'David K.', location: 'Blantyre', text: 'Ordering via WhatsApp was so easy. Got my watch the same day. Very impressed with the service.', stars: 5 }, { name: 'Chris P.', location: 'Mzuzu', text: 'Bought a wallet as a gift for my brother. He loved it. Looks very premium and leather quality is great.', stars: 5 }] },
   cta: { heading: 'Ready to Elevate Your Style?', subtitle: 'Browse our collection and place your order directly on WhatsApp in minutes.' },
+  delivery_options: [
+    { value: 'same_day', label: 'Same Day Delivery', fee: 2000, desc: 'Available in Lilongwe. Order before 2PM.' },
+    { value: 'pickup', label: 'Pickup', fee: 0, desc: 'Collect from our location. Free.' },
+    { value: 'standard', label: 'Standard Delivery', fee: 3000, desc: 'Nationwide. 2\u20134 business days.' },
+  ],
 };
 
 export default function PromotionsTab() {
@@ -62,6 +75,9 @@ export default function PromotionsTab() {
   // CTA
   const [ctaHeading, setCtaHeading] = useState(DEFAULTS.cta.heading);
   const [ctaSubtitle, setCtaSubtitle] = useState(DEFAULTS.cta.subtitle);
+
+  // Delivery options
+  const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>(DEFAULTS.delivery_options);
 
   // Category images
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
@@ -96,6 +112,9 @@ export default function PromotionsTab() {
 
         const catImg = (data.category_images || {}) as Record<string, string>;
         setCategoryImages(catImg);
+
+        const delOpts = data.delivery_options as { options: DeliveryOption[] } | undefined;
+        if (delOpts?.options && delOpts.options.length > 0) setDeliveryOptions(delOpts.options);
       }
     } catch (e) {
       console.error('Failed to load site content:', e);
@@ -133,6 +152,9 @@ export default function PromotionsTab() {
           break;
         case 'category_images':
           await upsertSiteContent('category_images', categoryImages);
+          break;
+        case 'delivery_options':
+          await upsertSiteContent('delivery_options', { options: deliveryOptions });
           break;
       }
       toast.success('Saved');
@@ -381,6 +403,46 @@ export default function PromotionsTab() {
                     <textarea value={ctaSubtitle} onChange={e => setCtaSubtitle(e.target.value)} rows={2}
                       placeholder="Browse our collection..." className="input-base resize-none" />
                   </Field>
+                </>
+              )}
+
+              {/* DELIVERY OPTIONS */}
+              {section.key === 'delivery_options' && (
+                <>
+                  <p className="text-xs text-gray-400">Configure delivery methods shown at checkout.</p>
+                  {deliveryOptions.map((opt, i) => (
+                    <div key={i} className="border border-gray-100 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Option #{i + 1}</span>
+                        <button onClick={() => setDeliveryOptions(deliveryOptions.filter((_, idx) => idx !== i))}
+                          className="text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input value={opt.label}
+                          onChange={e => { const next = [...deliveryOptions]; next[i] = { ...next[i], label: e.target.value }; setDeliveryOptions(next); }}
+                          className="input-base" placeholder="Label (e.g. Same Day)" />
+                        <input value={opt.desc}
+                          onChange={e => { const next = [...deliveryOptions]; next[i] = { ...next[i], desc: e.target.value }; setDeliveryOptions(next); }}
+                          className="input-base" placeholder="Description" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Field label="Value (slug)">
+                          <input value={opt.value}
+                            onChange={e => { const next = [...deliveryOptions]; next[i] = { ...next[i], value: e.target.value.replace(/\s+/g, '_') }; setDeliveryOptions(next); }}
+                            className="input-base" placeholder="same_day" />
+                        </Field>
+                        <Field label="Fee (MK)">
+                          <input type="number" value={opt.fee}
+                            onChange={e => { const next = [...deliveryOptions]; next[i] = { ...next[i], fee: Number(e.target.value) }; setDeliveryOptions(next); }}
+                            className="input-base" min="0" />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => setDeliveryOptions([...deliveryOptions, { value: '', label: '', fee: 0, desc: '' }])}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline">
+                    <Plus size={12} /> Add delivery option
+                  </button>
                 </>
               )}
 

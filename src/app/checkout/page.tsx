@@ -7,14 +7,14 @@ import { ChevronLeft, MessageCircle, Check, ShoppingBag } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
-import { createOrder } from '@/lib/supabase';
+import { createOrder, getSiteContent } from '@/lib/supabase';
 import { formatMK } from '@/components/ProductCard';
 import { CheckoutFormData, DeliveryMethod } from '@/lib/types';
 
-const DELIVERY_OPTIONS: { value: DeliveryMethod; label: string; fee: number; desc: string }[] = [
+const DEFAULT_DELIVERY_OPTIONS: { value: DeliveryMethod; label: string; fee: number; desc: string }[] = [
   { value: 'same_day', label: 'Same Day Delivery', fee: 2000, desc: 'Available in Lilongwe. Order before 2PM.' },
   { value: 'pickup', label: 'Pickup', fee: 0, desc: 'Collect from our location. Free.' },
-  { value: 'standard', label: 'Standard Delivery', fee: 3000, desc: 'Nationwide. 2–4 business days.' },
+  { value: 'standard', label: 'Standard Delivery', fee: 3000, desc: 'Nationwide. 2\u20134 business days.' },
 ];
 
 const STEPS = ['Your Details', 'Delivery', 'Confirm & Order'];
@@ -27,12 +27,13 @@ function generateOrderId(): string {
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const [step, setStep] = useState(0);
+  const [deliveryOptions, setDeliveryOptions] = useState(DEFAULT_DELIVERY_OPTIONS);
   const [form, setForm] = useState<CheckoutFormData>({
     fullName: '',
     phone: '',
     location: '',
     deliveryNotes: '',
-    deliveryMethod: 'same_day',
+    deliveryMethod: DEFAULT_DELIVERY_OPTIONS[0].value,
   });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
@@ -41,8 +42,20 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [step]);
 
-  const selectedDelivery = DELIVERY_OPTIONS.find(d => d.value === form.deliveryMethod)!;
-  const deliveryFee = selectedDelivery.fee;
+  useEffect(() => {
+    getSiteContent().then(content => {
+      const opts = content.delivery_options as { options: typeof DEFAULT_DELIVERY_OPTIONS } | undefined;
+      if (opts?.options && opts.options.length > 0) {
+        setDeliveryOptions(opts.options);
+        if (!opts.options.find(o => o.value === form.deliveryMethod)) {
+          setForm(f => ({ ...f, deliveryMethod: opts.options[0].value }));
+        }
+      }
+    }).catch(() => {});
+  }, []);
+
+  const selectedDelivery = deliveryOptions.find(d => d.value === form.deliveryMethod) || deliveryOptions[0];
+  const deliveryFee = selectedDelivery?.fee ?? 0;
   const grandTotal = totalPrice + deliveryFee;
   const orderId = generateOrderId();
 
@@ -235,7 +248,7 @@ export default function CheckoutPage() {
               <div className="animate-fadeIn">
                 <h2 className="text-sm font-bold uppercase tracking-widest mb-5">Delivery Method</h2>
                 <div className="space-y-3">
-                  {DELIVERY_OPTIONS.map(opt => (
+                  {deliveryOptions.map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => setForm(f => ({ ...f, deliveryMethod: opt.value }))}

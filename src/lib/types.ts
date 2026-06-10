@@ -15,7 +15,7 @@ export interface Product {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'delivered' | 'cancelled';
-export type DeliveryMethod = 'same_day' | 'pickup' | 'standard';
+export type DeliveryMethod = string;
 
 export interface OrderItem {
   product_id: string;
