@@ -42,8 +42,8 @@ export default function Navbar() {
             <Image
               src="/logo.jpg"
               alt="WatchGalore265 logo"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               className="object-contain"
               priority
             />
