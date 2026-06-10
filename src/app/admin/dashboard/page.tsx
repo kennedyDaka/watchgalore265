@@ -48,7 +48,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2.5 shrink-0">
-              <Image src="/logo.jpg" alt="WatchGalore265" width={54} height={54} className="object-contain" />
+              <Image src="/logo.jpg" alt="WatchGalore265" width={70} height={70} className="object-contain" />
               <div className="leading-none">
                 <div className="text-lg font-black tracking-tight uppercase">
                   WATCHGALORE<span className="text-accent">265</span>

@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-3">
-            <Image src="/logo.jpg" alt="WatchGalore265" width={66} height={66} className="object-contain" />
+            <Image src="/logo.jpg" alt="WatchGalore265" width={70} height={70} className="object-contain" />
           </div>
           <div className="text-xl font-black uppercase tracking-tight">
             WATCHGALORE<span className="text-accent">265</span>
