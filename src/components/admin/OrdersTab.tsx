@@ -84,11 +84,28 @@ function OrderRow({ order, onStatusChange }: { order: Order; onStatusChange: () 
           {/* Products */}
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Items</p>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {order.products?.map((item, i) => (
-                <div key={i} className="flex justify-between text-xs">
-                  <span className="font-medium">{item.product_name} <span className="text-gray-400">×{item.quantity}</span></span>
-                  <span className="font-semibold">{formatMK(item.price * item.quantity)}</span>
+                <div key={i} className="flex items-center gap-3 text-xs">
+                  <div className="relative w-10 h-10 shrink-0 bg-gray-100 overflow-hidden">
+                    {item.image ? (
+                      <img src={item.image} alt={item.product_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{item.product_name} <span className="text-gray-400">×{item.quantity}</span></p>
+                    <a
+                      href={`/product/${item.product_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline block truncate"
+                    >
+                      View Product →
+                    </a>
+                  </div>
+                  <span className="font-semibold shrink-0">{formatMK(item.price * item.quantity)}</span>
                 </div>
               ))}
               <div className="flex justify-between text-xs pt-1.5 border-t border-gray-200">

@@ -69,15 +69,22 @@ export default function CheckoutPage() {
   };
 
   const buildWhatsAppMessage = () => {
+    const siteUrl = 'https://watchgalore265.vercel.app';
+
     const itemLines = items
-      .map((i) => `${getCategoryEmoji(i.product.category)} ${i.product.name} \u00D7${i.quantity} \u2014 ${formatMK(i.product.price * i.quantity)}`)
+      .map((i) => {
+        const emoji = getCategoryEmoji(i.product.category);
+        const prodLink = `${siteUrl}/product/${i.product.id}`;
+        return `${emoji} ${i.product.name} \u00D7${i.quantity} \u2014 ${formatMK(i.product.price * i.quantity)}\n\uD83D\uDD17 ${prodLink}`;
+      })
       .join('\n');
 
     const deliveryLabel = selectedDelivery.label;
     const notesBlock = form.deliveryNotes ? `\n\n\u{1F4DD} Notes\n${form.deliveryNotes}` : '';
 
     return encodeURIComponent(
-      `\uD83D\uDED2 NEW ORDER #${orderId}\n\n` +
+      `\uD83D\uDED2 NEW ORDER #${orderId}\n` +
+      `${siteUrl}/admin/dashboard\n\n` +
       `\uD83D\uDC64 Customer\n${form.fullName}\n` +
       `\uD83D\uDCDE ${form.phone}\n` +
       `\uD83D\uDCCD ${form.location}\n\n` +
