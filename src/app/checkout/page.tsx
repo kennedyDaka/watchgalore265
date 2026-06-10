@@ -208,7 +208,7 @@ export default function CheckoutPage() {
               <div className="space-y-4 animate-fadeIn">
                 <h2 className="text-sm font-bold uppercase tracking-widest mb-5">Your Details</h2>
                 {[
-                  { id: 'fullName', label: 'Full Name', placeholder: 'e.g. Kennedy Daka', type: 'text' },
+                  { id: 'fullName', label: 'Full Name', placeholder: 'e.g. John Doe', type: 'text' },
                   { id: 'phone', label: 'Phone Number', placeholder: 'e.g. 0993 123 456', type: 'tel' },
                   { id: 'location', label: 'Delivery Location', placeholder: 'e.g. Lilongwe, Area 3', type: 'text' },
                   { id: 'deliveryNotes', label: 'Delivery Notes (optional)', placeholder: 'Any special instructions…', type: 'text' },
