@@ -42,7 +42,7 @@ export default async function HomePage() {
   } catch {}
 
   // Parse site content with safe defaults
-  const hero = (content.hero || {}) as Record<string, string>;
+  const hero = (content.hero || {}) as { badge?: string; heading?: string; subtitle?: string; bgImage?: string; imageOnly?: boolean };
   const promo = (content.promo_banner || {}) as Record<string, string[]>;
   const trust = ((content.trust || {}) as Record<string, unknown[]>).items || DEFAULT_TRUST;
   const testimonials = ((content.testimonials || {}) as Record<string, unknown[]>).items || [];
@@ -52,6 +52,7 @@ export default async function HomePage() {
   const heroHeading = hero.heading || 'Wear Time. Define Style.';
   const heroSubtitle = hero.subtitle || 'Hand-picked watches, wallets and belts for the modern Malawian gentleman. Order in minutes via WhatsApp.';
   const heroBgImage = (hero.bgImage || 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=1800&q=80') + (hero.bgImage ? `?v=${(content._updatedAt as string) || ''}` : '');
+  const heroImageOnly = hero.imageOnly === true;
   const promoItems = promo.items || ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'];
   const ctaHeading = cta.heading || 'Ready to Elevate Your Style?';
   const ctaSubtitle = cta.subtitle || 'Browse our collection and place your order directly on WhatsApp in minutes.';
@@ -62,59 +63,63 @@ export default async function HomePage() {
       <Navbar />
 
       {/* ─── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-charcoal">
+      <section className={`relative overflow-hidden bg-charcoal ${heroImageOnly ? 'min-h-[50vh] sm:min-h-[70vh]' : 'min-h-[85vh] flex items-center justify-center'}`}>
         <div className="absolute inset-0">
           <Image
             src={heroBgImage}
             alt="Luxury watches"
             fill
-            className="object-cover opacity-40"
+            className={`object-cover ${heroImageOnly ? '' : 'opacity-40'}`}
             priority
           />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        {!heroImageOnly && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          {heroBadge && (
-            <div className="inline-flex items-center gap-2 bg-accent/20 border border-accent/40 text-white text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-              {heroBadge}
+            <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+              {heroBadge && (
+                <div className="inline-flex items-center gap-2 bg-accent/20 border border-accent/40 text-white text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-8">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+                  {heroBadge}
+                </div>
+              )}
+
+              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-white mb-6 leading-[0.95]">
+                {heroHeading.split('.').map((part, i) => {
+                  const trimmed = part.trim();
+                  if (!trimmed) return null;
+                  return (
+                    <span key={i}>
+                      {i > 0 && <><br /></>}
+                      {trimmed}
+                      {heroHeading.includes('.') ? '.' : ''}
+                      {i === 0 && ' '}
+                    </span>
+                  );
+                })}
+              </h1>
+
+              <p className="text-base sm:text-lg text-gray-300 mb-10 max-w-xl mx-auto leading-relaxed">
+                {heroSubtitle}
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href="/shop"
+                  className="px-8 py-3.5 bg-white text-black font-bold text-sm tracking-widest uppercase hover:bg-gray-100 transition-colors w-full sm:w-auto text-center"
+                >
+                  Shop Now
+                </Link>
+              </div>
             </div>
-          )}
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-white mb-6 leading-[0.95]">
-            {heroHeading.split('.').map((part, i) => {
-              const trimmed = part.trim();
-              if (!trimmed) return null;
-              return (
-                <span key={i}>
-                  {i > 0 && <><br /></>}
-                  {trimmed}
-                  {heroHeading.includes('.') ? '.' : ''}
-                  {i === 0 && ' '}
-                </span>
-              );
-            })}
-          </h1>
-
-          <p className="text-base sm:text-lg text-gray-300 mb-10 max-w-xl mx-auto leading-relaxed">
-            {heroSubtitle}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/shop"
-              className="px-8 py-3.5 bg-white text-black font-bold text-sm tracking-widest uppercase hover:bg-gray-100 transition-colors w-full sm:w-auto text-center"
-            >
-              Shop Now
-            </Link>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40">
-          <div className="w-px h-10 bg-gradient-to-b from-white/0 to-white/40 animate-pulse"></div>
-        </div>
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40">
+              <div className="w-px h-10 bg-gradient-to-b from-white/0 to-white/40 animate-pulse"></div>
+            </div>
+          </>
+        )}
       </section>
 
       {/* ─── Promo Banner ──────────────────────────────────────────────── */}

@@ -62,6 +62,7 @@ export default function PromotionsTab() {
   const [heroSubtitle, setHeroSubtitle] = useState(DEFAULTS.hero.subtitle);
   const [heroBg, setHeroBg] = useState(DEFAULTS.hero.bgImage);
   const [heroBgUploading, setHeroBgUploading] = useState(false);
+  const [heroImageOnly, setHeroImageOnly] = useState(false);
 
   // Promo banner
   const [promoItems, setPromoItems] = useState<string[]>(DEFAULTS.promo_banner.items);
@@ -91,11 +92,12 @@ export default function PromotionsTab() {
       setDbConnected(hasData);
 
       if (hasData) {
-        const hero = (data.hero || {}) as Record<string, string>;
+        const hero = (data.hero || {}) as { badge?: string; heading?: string; subtitle?: string; bgImage?: string; imageOnly?: boolean };
         setHeroBadge(hero.badge || DEFAULTS.hero.badge);
         setHeroHeading(hero.heading || DEFAULTS.hero.heading);
         setHeroSubtitle(hero.subtitle || DEFAULTS.hero.subtitle);
         setHeroBg(hero.bgImage || DEFAULTS.hero.bgImage);
+        setHeroImageOnly(hero.imageOnly === true);
 
         const promo = (data.promo_banner || {}) as Record<string, string[]>;
         setPromoItems(promo.items || DEFAULTS.promo_banner.items);
@@ -136,6 +138,7 @@ export default function PromotionsTab() {
             heading: heroHeading,
             subtitle: heroSubtitle,
             bgImage: heroBg,
+            imageOnly: heroImageOnly,
           });
           break;
         case 'promo_banner':
@@ -258,6 +261,18 @@ export default function PromotionsTab() {
                     <input value={heroBg} onChange={e => setHeroBg(e.target.value)}
                       placeholder="https://images.unsplash.com/..." className="input-base mt-1" />
                   </Field>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer pt-2">
+                    <input
+                      type="checkbox"
+                      checked={heroImageOnly}
+                      onChange={e => setHeroImageOnly(e.target.checked)}
+                      className="w-4 h-4 accent-[#2563EB]"
+                    />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                      Image only (hide text &amp; overlay)
+                    </span>
+                  </label>
                 </>
               )}
 
