@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Save, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Upload } from 'lucide-react';
 import { getSiteContent, upsertSiteContent } from '@/lib/supabase';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { revalidateHome } from '@/app/actions';
 import toast from 'react-hot-toast';
 
 interface TrustItem {
@@ -160,7 +161,8 @@ export default function PromotionsTab() {
           await upsertSiteContent('delivery_options', { options: deliveryOptions });
           break;
       }
-      toast.success('Saved');
+      toast.success('Saved — homepage updated');
+      revalidateHome().catch(() => {});
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to save';
       toast.error(msg);

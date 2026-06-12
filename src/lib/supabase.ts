@@ -6,7 +6,13 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
+  supabaseAnonKey || 'placeholder-key',
+  {
+    global: {
+      fetch: (url: RequestInfo | URL, options?: RequestInit) =>
+        fetch(url, { ...options, cache: 'no-store' }),
+    },
+  }
 );
 
 // Ensure the client has a valid session before write operations.
@@ -376,8 +382,15 @@ export async function getSiteContentKey(key: string): Promise<unknown> {
 
 export async function upsertSiteContent(key: string, value: Record<string, unknown>) {
   await requireAuth();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('site_content')
-    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-  if (error) throw error;
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+    .select();
+  if (error) {
+    console.error(`upsertSiteContent(${key}) error:`, error.message, error.details, error.hint);
+    throw error;
+  }
+  if (!data || data.length === 0) {
+    console.warn(`upsertSiteContent(${key}): no rows returned — RLS may be blocking the upsert`);
+  }
 }
