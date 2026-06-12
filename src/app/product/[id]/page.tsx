@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ShoppingBag, ChevronLeft } from 'lucide-react';
@@ -69,23 +69,6 @@ export default function ProductPage() {
     toast.success(`${product.name} added to cart`);
   };
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollToImage = (index: number) => {
-    setActiveImage(index);
-    const child = scrollRef.current?.children[index] as HTMLElement | undefined;
-    child?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-  };
-
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const index = Math.round(el.scrollLeft / el.clientWidth);
-    if (index !== activeImage && index >= 0 && index < images.length) {
-      setActiveImage(index);
-    }
-  };
-
   return (
     <>
       <Navbar />
@@ -104,44 +87,24 @@ export default function ProductPage() {
           {/* Image gallery */}
           <div>
             <div className="w-full aspect-[4/3] md:aspect-square bg-gray-50 mb-3 relative overflow-hidden">
-              <div
-                ref={scrollRef}
-                onScroll={handleScroll}
-                className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
-              >
-                {images.map((img, i) => (
-                  <div key={i} className="w-full h-full shrink-0 snap-center flex items-center justify-center">
-                    <img src={img} alt={product.name} className="max-w-full max-h-full object-contain block" />
-                  </div>
-                ))}
-              </div>
+              <img
+                src={images[activeImage]}
+                alt={product.name}
+                className="w-full h-full object-contain"
+              />
               {product.stock === 0 && (
                 <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
                   <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Sold Out</span>
                 </div>
               )}
             </div>
-            {/* Dots indicator */}
-            {images.length > 1 && (
-              <div className="flex items-center justify-center gap-1.5 mb-3">
-                {images.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => scrollToImage(i)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      i === activeImage ? 'bg-accent' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
             {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto no-scrollbar">
                 {images.map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => scrollToImage(i)}
+                    onClick={() => setActiveImage(i)}
                     className={`w-16 h-16 shrink-0 overflow-hidden border-2 transition-colors ${
                       i === activeImage ? 'border-accent' : 'border-transparent'
                     }`}
