@@ -4,18 +4,18 @@ import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
 import HomeSections from '@/components/HomeSections';
-import { getFeaturedProducts, getCategories, getSiteContent } from '@/lib/supabase';
+import { getFeaturedProducts, getCategoriesWithProducts, getSiteContent } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
-  let categories: Awaited<ReturnType<typeof getCategories>> = [];
+  let categories: Awaited<ReturnType<typeof getCategoriesWithProducts>> = [];
   let siteContent: Record<string, unknown> = {};
   try {
-    [featuredProducts, categories, siteContent] = await Promise.all([
+      [featuredProducts, categories, siteContent] = await Promise.all([
       getFeaturedProducts(),
-      getCategories(),
+      getCategoriesWithProducts(),
       getSiteContent(),
     ]);
   } catch {}

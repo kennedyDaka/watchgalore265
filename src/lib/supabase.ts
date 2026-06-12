@@ -329,6 +329,25 @@ export async function getCategories() {
   return data || [];
 }
 
+export async function getCategoriesWithProducts() {
+  const { data: products, error } = await supabase
+    .from('products')
+    .select('category_id')
+    .eq('in_stock', true)
+    .gt('stock_quantity', 0);
+  if (error) throw error;
+
+  const activeIds = new Set((products || []).map((p: { category_id: string }) => p.category_id).filter(Boolean));
+
+  const { data: cats, error: catErr } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name');
+  if (catErr) throw catErr;
+
+  return (cats || []).filter((c: { id: string }) => activeIds.has(c.id));
+}
+
 export async function createCategory(slug: string, name: string) {
   await requireAuth();
   const { data, error } = await supabase
