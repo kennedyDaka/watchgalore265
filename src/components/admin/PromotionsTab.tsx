@@ -308,11 +308,14 @@ export default function PromotionsTab() {
                             setCategoryImagesUploading(prev => ({ ...prev, [cat.slug]: true }));
                             try {
                               const url = await uploadToCloudinary(file, `site-content/${cat.slug}`);
-                              const updated = { ...categoryImages, [cat.slug]: url };
-                              setCategoryImages(updated);
-                              await upsertSiteContent('category_images', updated);
+                              // Read current state from DB first to avoid overwriting
+                              const existing = await getSiteContent();
+                              const currentImages = (existing.category_images || {}) as Record<string, string>;
+                              const merged = { ...currentImages, [cat.slug]: url };
+                              setCategoryImages(merged);
+                              await upsertSiteContent('category_images', merged);
                               revalidateHome().catch(() => {});
-                              toast.success('Image uploaded & saved');
+                              toast.success('Image saved');
                             } catch (err: unknown) {
                               const msg = err instanceof Error ? err.message : 'Upload failed';
                               toast.error(msg);

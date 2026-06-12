@@ -119,6 +119,26 @@ export async function getFeaturedProducts() {
   return (data || []).map(normalizeProduct);
 }
 
+export async function getCategoryProductImages(): Promise<Record<string, string>> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('category_id, images, categories(slug)')
+    .eq('in_stock', true)
+    .gt('stock_quantity', 0)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  const result: Record<string, string> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const row of (data || []) as any[]) {
+    const slug = row.categories?.slug;
+    if (slug && row.images?.length > 0 && !result[slug]) {
+      result[slug] = row.images[0];
+    }
+  }
+  return result;
+}
+
 // ─── Orders ───────────────────────────────────────────────────────────────
 
 export async function createOrder(orderData: {

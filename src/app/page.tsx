@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
 import HomeSections from '@/components/HomeSections';
-import { getFeaturedProducts, getCategoriesWithProducts, getSiteContent } from '@/lib/supabase';
+import { getFeaturedProducts, getCategoriesWithProducts, getSiteContent, getCategoryProductImages } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,11 +12,13 @@ export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
   let categories: Awaited<ReturnType<typeof getCategoriesWithProducts>> = [];
   let siteContent: Record<string, unknown> = {};
+  let categoryProductImages: Record<string, string> = {};
   try {
-      [featuredProducts, categories, siteContent] = await Promise.all([
+    [featuredProducts, categories, siteContent, categoryProductImages] = await Promise.all([
       getFeaturedProducts(),
       getCategoriesWithProducts(),
       getSiteContent(),
+      getCategoryProductImages(),
     ]);
   } catch {}
 
@@ -24,7 +26,7 @@ export default async function HomePage() {
     <>
       <Navbar />
 
-      <HomeSections categories={categories} initialContent={siteContent as Record<string, unknown>} />
+      <HomeSections categories={categories} initialContent={siteContent as Record<string, unknown>} categoryProductImages={categoryProductImages} />
 
       {/* ─── Featured Products ──────────────────────────────────────────── */}
       {featuredProducts.length > 0 && (

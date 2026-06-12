@@ -40,7 +40,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   belts: 'Classic and contemporary belts',
 };
 
-export default function HomeSections({ categories, initialContent }: { categories: Category[]; initialContent?: Record<string, unknown> }) {
+export default function HomeSections({ categories, initialContent, categoryProductImages = {} }: { categories: Category[]; initialContent?: Record<string, unknown>; categoryProductImages?: Record<string, string> }) {
   const [content, setContent] = useState<SiteContent>(initialContent as SiteContent);
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export default function HomeSections({ categories, initialContent }: { categorie
                 className="relative group overflow-hidden aspect-[4/3] bg-gray-100 w-full"
               >
                 <Image
-                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || DEFAULT_CATEGORY_IMAGES.watches}
+                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || categoryProductImages[cat.slug] || DEFAULT_CATEGORY_IMAGES.watches}
                   alt={cat.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
