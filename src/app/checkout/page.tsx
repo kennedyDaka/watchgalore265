@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, MessageCircle, Check, ShoppingBag } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Check, ShoppingBag, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
@@ -25,7 +25,7 @@ function generateOrderId(): string {
 }
 
 export default function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, clearCart, removeItem, updateQuantity } = useCart();
   const [step, setStep] = useState(0);
   const [deliveryOptions, setDeliveryOptions] = useState(DEFAULT_DELIVERY_OPTIONS);
   const [form, setForm] = useState<CheckoutFormData>({
@@ -175,6 +175,57 @@ export default function CheckoutPage() {
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">Checkout</h1>
         </div>
 
+        {/* Mobile cart — visible only below lg */}
+        <div className="lg:hidden mb-6 border border-gray-100 p-4">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">
+            Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
+          </h3>
+          <div className="space-y-3">
+            {items.map(item => (
+              <div key={item.product.id} className="flex items-center gap-3">
+                <div className="relative w-12 h-12 shrink-0 bg-gray-50 overflow-hidden">
+                  <Image
+                    src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
+                    alt={item.product.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold uppercase truncate">{item.product.name}</p>
+                  <p className="text-xs text-gray-400">{formatMK(item.product.price)}</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                    className="w-7 h-7 flex items-center justify-center border border-gray-200 text-gray-600 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    className="w-7 h-7 flex items-center justify-center border border-gray-200 text-gray-600 text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+                <button
+                  onClick={() => removeItem(item.product.id)}
+                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                  title="Remove"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between text-sm font-black">
+            <span>Total</span>
+            <span>{formatMK(totalPrice)}</span>
+          </div>
+        </div>
+
         {/* Step indicators */}
         <div className="flex items-center gap-0 mb-6 sm:mb-10">
           {STEPS.map((label, i) => (
@@ -301,7 +352,28 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold uppercase truncate">{item.product.name}</p>
-                        <p className="text-xs text-gray-400">x{item.quantity}</p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
+                          >
+                            −
+                          </button>
+                          <span className="w-5 text-center text-[10px] font-medium">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
+                          >
+                            +
+                          </button>
+                          <button
+                            onClick={() => removeItem(item.product.id)}
+                            className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Remove"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-sm font-bold">{formatMK(item.product.price * item.quantity)}</p>
                     </div>
@@ -370,13 +442,35 @@ export default function CheckoutPage() {
                         fill
                         className="object-cover"
                       />
-                      <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-gray-700 text-white text-[10px] rounded-full flex items-center justify-center font-bold w-[18px] h-[18px]">
+                      <span className="absolute -top-1.5 -right-1.5 bg-gray-700 text-white text-[10px] rounded-full flex items-center justify-center font-bold w-[18px] h-[18px]">
                         {item.quantity}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold uppercase truncate">{item.product.name}</p>
                       <p className="text-xs text-gray-400">{formatMK(item.product.price)}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
+                        >
+                          −
+                        </button>
+                        <span className="w-5 text-center text-[10px] font-medium">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => removeItem(item.product.id)}
+                          className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
+                          title="Remove"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
                     </div>
                     <p className="text-sm font-bold">{formatMK(item.product.price * item.quantity)}</p>
                   </div>

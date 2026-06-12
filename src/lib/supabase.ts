@@ -209,6 +209,23 @@ export async function getAllProducts() {
   return (data || []).map(normalizeProduct);
 }
 
+async function ensureCategory(slug: string): Promise<string | null> {
+  const { data: cat } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('slug', slug)
+    .single();
+  if (cat?.id) return cat.id;
+
+  const displayName = slug.charAt(0).toUpperCase() + slug.slice(1);
+  const { data: created } = await supabase
+    .from('categories')
+    .insert([{ slug, name: displayName }])
+    .select('id')
+    .single();
+  return created?.id || null;
+}
+
 export async function createProduct(productData: {
   name: string;
   description: string;
@@ -221,19 +238,14 @@ export async function createProduct(productData: {
   colors?: string[];
 }) {
   await requireAuth();
-  // Resolve category slug → id
-  const { data: cat } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('slug', productData.category)
-    .single();
+  const categoryId = await ensureCategory(productData.category);
 
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
   const payload = {
     name: productData.name,
     description: productData.description,
-    category_id: cat?.id || null,
+    category_id: categoryId,
     price: productData.price,
     brand: productData.brand || null,
     stock_quantity: productData.stock,
@@ -284,12 +296,8 @@ export async function updateProduct(id: string, productData: {
     updates.in_stock = productData.stock > 0;
   }
   if (productData.category !== undefined) {
-    const { data: cat } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', productData.category)
-      .single();
-    if (cat) updates.category_id = cat.id;
+    const categoryId = await ensureCategory(productData.category);
+    if (categoryId) updates.category_id = categoryId;
   }
 
   updates.updated_at = new Date().toISOString();
