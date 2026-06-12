@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Upload } from 'lucide-react';
-import { getSiteContent, upsertSiteContent } from '@/lib/supabase';
+import { getSiteContent, upsertSiteContent, getCategories } from '@/lib/supabase';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { revalidateHome } from '@/app/actions';
 import toast from 'react-hot-toast';
@@ -84,11 +84,13 @@ export default function PromotionsTab() {
   // Category images
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
   const [categoryImagesUploading, setCategoryImagesUploading] = useState<Record<string, boolean>>({});
+  const [dbCategories, setDbCategories] = useState<{ id: string; slug: string; name: string }[]>([]);
 
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getSiteContent();
+      const [data, cats] = await Promise.all([getSiteContent(), getCategories()]);
+      setDbCategories(cats || []);
       const hasData = Object.keys(data).length > 0;
       setDbConnected(hasData);
 
@@ -282,45 +284,45 @@ export default function PromotionsTab() {
               {section.key === 'category_images' && (
                 <>
                   <p className="text-xs text-gray-400">Upload images for each collection shown on the homepage.</p>
-                  {['watches', 'wallets', 'belts'].map(slug => (
-                    <div key={slug} className="border border-gray-100 p-4 space-y-3">
+                  {dbCategories.map(cat => (
+                    <div key={cat.slug} className="border border-gray-100 p-4 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{slug}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{cat.name}</span>
                       </div>
-                      {categoryImages[slug] && (
+                      {categoryImages[cat.slug] && (
                         <div className="relative mb-2 w-full aspect-video bg-gray-100 overflow-hidden">
-                          <img src={categoryImages[slug]} alt={slug} className="w-full h-full object-cover" />
+                          <img src={categoryImages[cat.slug]} alt={cat.name} className="w-full h-full object-cover" />
                         </div>
                       )}
                       <label className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-dashed border-gray-300 bg-gray-50 text-xs font-semibold text-gray-500 hover:border-accent hover:text-accent cursor-pointer transition-colors">
                         <Upload size={14} />
-                        {categoryImagesUploading[slug] ? 'Uploading…' : 'Upload Image'}
+                        {categoryImagesUploading[cat.slug] ? 'Uploading…' : 'Upload Image'}
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          disabled={categoryImagesUploading[slug]}
+                          disabled={categoryImagesUploading[cat.slug]}
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            setCategoryImagesUploading(prev => ({ ...prev, [slug]: true }));
+                            setCategoryImagesUploading(prev => ({ ...prev, [cat.slug]: true }));
                             try {
-                              const url = await uploadToCloudinary(file, `site-content/${slug}`);
-                              setCategoryImages(prev => ({ ...prev, [slug]: url }));
+                              const url = await uploadToCloudinary(file, `site-content/${cat.slug}`);
+                              setCategoryImages(prev => ({ ...prev, [cat.slug]: url }));
                               toast.success('Image uploaded');
                             } catch (err: unknown) {
                               const msg = err instanceof Error ? err.message : 'Upload failed';
                               toast.error(msg);
                             } finally {
-                              setCategoryImagesUploading(prev => ({ ...prev, [slug]: false }));
+                              setCategoryImagesUploading(prev => ({ ...prev, [cat.slug]: false }));
                             }
                           }}
                         />
                       </label>
                       <p className="text-[10px] text-gray-400 mt-1.5">Or paste a URL:</p>
                       <input
-                        value={categoryImages[slug] || ''}
-                        onChange={e => setCategoryImages(prev => ({ ...prev, [slug]: e.target.value }))}
+                        value={categoryImages[cat.slug] || ''}
+                        onChange={e => setCategoryImages(prev => ({ ...prev, [cat.slug]: e.target.value }))}
                         placeholder="https://images.unsplash.com/..."
                         className="input-base mt-1"
                       />
