@@ -166,7 +166,7 @@ export default function CheckoutPage() {
     <>
       <Navbar />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-hidden w-full">
         <Link href="/shop" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-accent uppercase tracking-widest mb-6 sm:mb-8 transition-colors">
           <ChevronLeft size={14} /> Continue Shopping
         </Link>

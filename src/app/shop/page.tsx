@@ -88,7 +88,7 @@ export default function ShopPage() {
     <>
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 min-h-screen">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 min-h-screen overflow-hidden">
         {/* Page header */}
         <div className="mb-6 sm:mb-8 accent-line">
           <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight mb-1">

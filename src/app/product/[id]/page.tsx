@@ -73,7 +73,7 @@ export default function ProductPage() {
     <>
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full overflow-hidden">
         {/* Breadcrumb */}
         <Link
           href="/shop"
@@ -83,10 +83,10 @@ export default function ProductPage() {
           Back to collection
         </Link>
 
-        <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
+        <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 w-full max-w-full">
           {/* Image gallery */}
           <div>
-            <div className="w-full aspect-square bg-gray-50 relative overflow-hidden">
+            <div className="w-full aspect-square bg-gray-50 relative overflow-hidden rounded-none">
               <img
                 src={images[activeImage]}
                 alt={product.name}
@@ -117,7 +117,7 @@ export default function ProductPage() {
           </div>
 
           {/* Product info */}
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0 w-full">
             {product.brand && (
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                 {product.brand}
