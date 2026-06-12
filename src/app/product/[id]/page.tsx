@@ -86,7 +86,7 @@ export default function ProductPage() {
         <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
           {/* Image gallery */}
           <div>
-            <div className="w-full aspect-[4/3] md:aspect-square bg-gray-50 mb-3 relative overflow-hidden">
+            <div className="w-full aspect-square bg-gray-50 relative overflow-hidden">
               <img
                 src={images[activeImage]}
                 alt={product.name}
@@ -97,23 +97,23 @@ export default function ProductPage() {
                   <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Sold Out</span>
                 </div>
               )}
+              {/* Thumbnails overlaid on image */}
+              {images.length > 1 && (
+                <div className="absolute bottom-2 left-2 right-2 flex gap-1 overflow-x-auto no-scrollbar">
+                  {images.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImage(i)}
+                      className={`w-9 h-9 shrink-0 overflow-hidden border-2 transition-colors ${
+                        i === activeImage ? 'border-white' : 'border-white/50'
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            {/* Thumbnails */}
-            {images.length > 1 && (
-              <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImage(i)}
-                    className={`w-12 h-12 shrink-0 overflow-hidden border-2 transition-colors ${
-                      i === activeImage ? 'border-accent' : 'border-transparent'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Product info */}
