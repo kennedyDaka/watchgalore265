@@ -90,7 +90,7 @@ export default function ProductPage() {
               <img
                 src={images[activeImage]}
                 alt={product.name}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
               {product.stock === 0 && (
                 <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
@@ -100,12 +100,12 @@ export default function ProductPage() {
             </div>
             {/* Thumbnails */}
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
                 {images.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
-                    className={`w-16 h-16 shrink-0 overflow-hidden border-2 transition-colors ${
+                    className={`w-12 h-12 shrink-0 overflow-hidden border-2 transition-colors ${
                       i === activeImage ? 'border-accent' : 'border-transparent'
                     }`}
                   >
