@@ -60,6 +60,9 @@ export default function HomeSections({ categories, initialContent }: { categorie
         });
     };
 
+    // Fetch immediately on mount to catch any changes made since server render
+    load();
+
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') load();
     };
