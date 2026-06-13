@@ -82,7 +82,7 @@ export default function CheckoutPage() {
   };
 
   const buildWhatsAppMessage = () => {
-    const siteUrl = 'https://watchgalore265.vercel.app';
+    const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://watchgalore265.vercel.app';
 
     const itemLines = items
       .map((i) => {
@@ -139,7 +139,7 @@ export default function CheckoutPage() {
       setSubmitting(false);
     }
 
-    const waNumber = '265888810581';
+    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
     const waUrl = `https://wa.me/${waNumber}?text=${buildWhatsAppMessage()}`;
     clearCart();
     window.location.href = waUrl;

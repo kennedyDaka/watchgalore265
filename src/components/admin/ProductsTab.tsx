@@ -24,7 +24,7 @@ interface DbCategory {
 const EMPTY_FORM = {
   name: '',
   description: '',
-  category: 'watches' as Category,
+  category: '' as Category,
   price: '',
   brand: '',
   stock: '',
@@ -81,8 +81,8 @@ function ProductModal({
   };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.price || !form.stock) {
-      toast.error('Name, price and stock are required');
+    if (!form.name.trim() || !form.price || !form.stock || !form.category) {
+      toast.error('Name, price, stock and category are required');
       return;
     }
     setSaving(true);
@@ -148,6 +148,7 @@ function ProductModal({
             </Field>
             <Field label="Category *">
               <select value={form.category} onChange={e => set('category', e.target.value as Category)} className="input-base capitalize">
+                <option value="" disabled>Select a category</option>
                 {categories.map(c => <option key={c.id} value={c.slug} className="capitalize">{c.name}</option>)}
               </select>
             </Field>
@@ -190,7 +191,7 @@ function ProductModal({
               type="checkbox"
               checked={form.featured}
               onChange={e => set('featured', e.target.checked)}
-              className="w-4 h-4 accent-[#2563EB]"
+                      className="w-4 h-4 accent-accent"
             />
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
               Featured product (shown on homepage)

@@ -12,6 +12,8 @@ interface SiteContent {
   trust?: { items?: { title: string; desc: string }[] };
   testimonials?: { items?: { name: string; location: string; text: string; stars: number }[] };
   cta?: { heading?: string; subtitle?: string };
+  sections?: { featuredTitle?: string; featuredSubtitle?: string; collectionTitle?: string; collectionSubtitle?: string; reviewsTitle?: string; reviewsSubtitle?: string };
+  category_descriptions?: Record<string, string>;
 }
 
 interface Category {
@@ -32,12 +34,6 @@ const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
   watches: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
   wallets: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&q=80',
   belts: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80',
-};
-
-const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  watches: 'Precision crafted timepieces',
-  wallets: 'Premium leather wallets',
-  belts: 'Classic and contemporary belts',
 };
 
 export default function HomeSections({ categories, initialContent, categoryProductImages = {} }: { categories: Category[]; initialContent?: Record<string, unknown>; categoryProductImages?: Record<string, string> }) {
@@ -93,6 +89,8 @@ export default function HomeSections({ categories, initialContent, categoryProdu
 
   const promoItems = content.promo_banner?.items || ['Free Same-Day Delivery in Lilongwe', 'Premium Quality Guaranteed', 'Secure WhatsApp Checkout', 'Authentic Products Only'];
   const catImages = content.category_images || {};
+  const catDescriptions = content.category_descriptions || {};
+  const sec = content.sections || {};
   const trustItems = content.trust?.items || DEFAULT_TRUST;
   const testimonialItems = content.testimonials?.items || [];
   const ctaHeading = content.cta?.heading || 'Ready to Elevate Your Style?';
@@ -183,8 +181,8 @@ export default function HomeSections({ categories, initialContent, categoryProdu
       {categories.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <div className="accent-line">
-            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">The Collection</h2>
-            <p className="text-gray-500 text-sm mb-10">Explore our curated categories</p>
+            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">{sec.collectionTitle || 'The Collection'}</h2>
+            {sec.collectionSubtitle && <p className="text-gray-500 text-sm mb-10">{sec.collectionSubtitle}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -195,7 +193,7 @@ export default function HomeSections({ categories, initialContent, categoryProdu
                 className="relative group overflow-hidden aspect-[4/3] bg-gray-100 w-full"
               >
                 <Image
-                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || categoryProductImages[cat.slug] || DEFAULT_CATEGORY_IMAGES.watches}
+                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || categoryProductImages[cat.slug] || Object.values(DEFAULT_CATEGORY_IMAGES)[0]}
                   alt={cat.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -205,7 +203,7 @@ export default function HomeSections({ categories, initialContent, categoryProdu
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6">
                   <p className="text-white text-xl font-black uppercase tracking-wide">{cat.name}</p>
-                  <p className="text-white/70 text-xs mt-1">{CATEGORY_DESCRIPTIONS[cat.slug] || cat.name}</p>
+                  {catDescriptions[cat.slug] && <p className="text-white/70 text-xs mt-1">{catDescriptions[cat.slug]}</p>}
                 </div>
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="bg-white text-black text-[10px] font-bold uppercase tracking-widest px-3 py-1.5">
@@ -242,8 +240,8 @@ export default function HomeSections({ categories, initialContent, categoryProdu
       {testimonialItems.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <div className="accent-line">
-            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">Customer Reviews</h2>
-            <p className="text-gray-500 text-sm mb-10">What our customers say</p>
+            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">{sec.reviewsTitle || 'Customer Reviews'}</h2>
+            {sec.reviewsSubtitle && <p className="text-gray-500 text-sm mb-10">{sec.reviewsSubtitle}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -251,7 +249,7 @@ export default function HomeSections({ categories, initialContent, categoryProdu
               <div key={i} className="border border-gray-100 p-6 hover:border-accent/30 transition-colors">
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: t.stars || 5 }).map((_, j) => (
-                    <Star key={j} size={14} fill="#2563EB" color="#2563EB" />
+                    <Star key={j} size={14} className="text-accent" fill="currentColor" />
                   ))}
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>

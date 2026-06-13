@@ -26,11 +26,13 @@ interface DeliveryOption {
   desc: string;
 }
 
-type Section = 'hero' | 'promo_banner' | 'trust' | 'testimonials' | 'cta' | 'category_images' | 'delivery_options';
+type Section = 'hero' | 'promo_banner' | 'trust' | 'testimonials' | 'cta' | 'category_images' | 'category_descriptions' | 'sections' | 'delivery_options';
 
 const SECTIONS: { key: Section; label: string }[] = [
   { key: 'hero', label: 'Hero Section' },
   { key: 'category_images', label: 'Collection Images' },
+  { key: 'category_descriptions', label: 'Category Descriptions' },
+  { key: 'sections', label: 'Section Headings' },
   { key: 'delivery_options', label: 'Delivery Options' },
   { key: 'promo_banner', label: 'Promo Marquee Banner' },
   { key: 'trust', label: 'Trust Indicators' },
@@ -86,6 +88,17 @@ export default function PromotionsTab() {
   const [categoryImagesUploading, setCategoryImagesUploading] = useState<Record<string, boolean>>({});
   const [dbCategories, setDbCategories] = useState<{ id: string; slug: string; name: string }[]>([]);
 
+  // Category descriptions
+  const [categoryDescriptions, setCategoryDescriptions] = useState<Record<string, string>>({});
+
+  // Section headings
+  const [featuredTitle, setFeaturedTitle] = useState('Featured Pieces');
+  const [featuredSubtitle, setFeaturedSubtitle] = useState('Hand-picked for the discerning gentleman');
+  const [collectionTitle, setCollectionTitle] = useState('The Collection');
+  const [collectionSubtitle, setCollectionSubtitle] = useState('');
+  const [reviewsTitle, setReviewsTitle] = useState('Customer Reviews');
+  const [reviewsSubtitle, setReviewsSubtitle] = useState('');
+
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
@@ -117,6 +130,17 @@ export default function PromotionsTab() {
 
         const catImg = (data.category_images || {}) as Record<string, string>;
         setCategoryImages(catImg);
+
+        const catDesc = (data.category_descriptions || {}) as Record<string, string>;
+        if (Object.keys(catDesc).length > 0) setCategoryDescriptions(catDesc);
+
+        const sec = (data.sections || {}) as Record<string, string>;
+        if (sec.featuredTitle) setFeaturedTitle(sec.featuredTitle);
+        if (sec.featuredSubtitle) setFeaturedSubtitle(sec.featuredSubtitle);
+        if (sec.collectionTitle) setCollectionTitle(sec.collectionTitle);
+        if (sec.collectionSubtitle) setCollectionSubtitle(sec.collectionSubtitle);
+        if (sec.reviewsTitle) setReviewsTitle(sec.reviewsTitle);
+        if (sec.reviewsSubtitle) setReviewsSubtitle(sec.reviewsSubtitle);
 
         const delOpts = data.delivery_options as { options: DeliveryOption[] } | undefined;
         if (delOpts?.options && delOpts.options.length > 0) setDeliveryOptions(delOpts.options);
@@ -158,6 +182,14 @@ export default function PromotionsTab() {
           break;
         case 'category_images':
           await upsertSiteContent('category_images', categoryImages);
+          break;
+        case 'category_descriptions':
+          await upsertSiteContent('category_descriptions', categoryDescriptions);
+          break;
+        case 'sections':
+          await upsertSiteContent('sections', {
+            featuredTitle, featuredSubtitle, collectionTitle, collectionSubtitle, reviewsTitle, reviewsSubtitle,
+          });
           break;
         case 'delivery_options':
           await upsertSiteContent('delivery_options', { options: deliveryOptions });
@@ -271,7 +303,7 @@ export default function PromotionsTab() {
                       type="checkbox"
                       checked={heroImageOnly}
                       onChange={e => setHeroImageOnly(e.target.checked)}
-                      className="w-4 h-4 accent-[#2563EB]"
+                      className="w-4 h-4 accent-accent"
                     />
                     <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
                       Image only (hide text &amp; overlay)
@@ -428,6 +460,42 @@ export default function PromotionsTab() {
                     <textarea value={ctaSubtitle} onChange={e => setCtaSubtitle(e.target.value)} rows={2}
                       placeholder="Browse our collection..." className="input-base resize-none" />
                   </Field>
+                </>
+              )}
+
+              {/* CATEGORY DESCRIPTIONS */}
+              {section.key === 'category_descriptions' && (
+                <>
+                  <p className="text-xs text-gray-400">Descriptions shown below each category name on the homepage.</p>
+                  {dbCategories.map(cat => (
+                    <Field key={cat.slug} label={cat.name}>
+                      <input value={categoryDescriptions[cat.slug] || ''}
+                        onChange={e => setCategoryDescriptions(prev => ({ ...prev, [cat.slug]: e.target.value }))}
+                        className="input-base" placeholder={`e.g. Premium ${cat.name.toLowerCase()}`} />
+                    </Field>
+                  ))}
+                </>
+              )}
+
+              {/* SECTION HEADINGS */}
+              {section.key === 'sections' && (
+                <>
+                  <p className="text-xs text-gray-400">Edit section titles and subtitles on the homepage.</p>
+                  <div className="border border-gray-100 p-4 space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Featured Products</p>
+                    <Field label="Title"><input value={featuredTitle} onChange={e => setFeaturedTitle(e.target.value)} className="input-base" placeholder="Featured Pieces" /></Field>
+                    <Field label="Subtitle"><input value={featuredSubtitle} onChange={e => setFeaturedSubtitle(e.target.value)} className="input-base" placeholder="Hand-picked for the discerning gentleman" /></Field>
+                  </div>
+                  <div className="border border-gray-100 p-4 space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Collection / Categories</p>
+                    <Field label="Title"><input value={collectionTitle} onChange={e => setCollectionTitle(e.target.value)} className="input-base" placeholder="The Collection" /></Field>
+                    <Field label="Subtitle"><input value={collectionSubtitle} onChange={e => setCollectionSubtitle(e.target.value)} className="input-base" placeholder="Explore our curated categories" /></Field>
+                  </div>
+                  <div className="border border-gray-100 p-4 space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Customer Reviews</p>
+                    <Field label="Title"><input value={reviewsTitle} onChange={e => setReviewsTitle(e.target.value)} className="input-base" placeholder="Customer Reviews" /></Field>
+                    <Field label="Subtitle"><input value={reviewsSubtitle} onChange={e => setReviewsSubtitle(e.target.value)} className="input-base" placeholder="What our customers say" /></Field>
+                  </div>
                 </>
               )}
 

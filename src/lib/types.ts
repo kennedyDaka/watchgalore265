@@ -1,4 +1,4 @@
-export type Category = 'watches' | 'wallets' | 'belts' | string;
+export type Category = string;
 
 export interface Product {
   id: string;

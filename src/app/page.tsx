@@ -32,8 +32,8 @@ export default async function HomePage() {
       {featuredProducts.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
           <div className="accent-line">
-            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">Featured Pieces</h2>
-            <p className="text-gray-500 text-sm mb-10">Hand-picked for the discerning gentleman</p>
+            <h2 className="text-3xl font-black uppercase tracking-tight mb-1">{(siteContent as any)?.sections?.featuredTitle || 'Featured Pieces'}</h2>
+            <p className="text-gray-500 text-sm mb-10">{(siteContent as any)?.sections?.featuredSubtitle || 'Hand-picked for the discerning gentleman'}</p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">

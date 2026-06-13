@@ -65,7 +65,8 @@ export default function ProductPage() {
       : ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'];
 
   const handleAddToCart = () => {
-    addItem(product, quantity);
+    const selectedImage = images[activeImage];
+    addItem({ ...product, images: [selectedImage] }, quantity);
     toast.success(`${product.name} added to cart`);
   };
 

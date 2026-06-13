@@ -92,7 +92,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-100 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-1.5 text-[10px] sm:text-xs text-gray-400 text-center sm:text-left">
-          <span>© 2026 WATCHGALORE265</span>
+          <span>© {new Date().getFullYear()} WATCHGALORE265</span>
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="hidden sm:inline">·</span>
             <Link href="/admin/dashboard" className="hover:text-accent transition-colors uppercase tracking-wider">

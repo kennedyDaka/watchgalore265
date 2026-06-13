@@ -46,7 +46,7 @@ function normalizeProduct(row: any) {
     description: row.description || '',
     tagline: row.tagline || '',
     // category slug comes from the joined categories table
-    category: row.categories?.slug || row.category_slug || 'watches',
+    category: row.categories?.slug || row.category_slug || '',
     price: row.price,
     // prefer multi-image array; fall back to image_url
     images: row.images?.length ? row.images : (row.image_url ? [row.image_url] : []),
