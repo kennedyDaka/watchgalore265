@@ -140,7 +140,11 @@ export default function CheckoutPage() {
     }
 
     const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
-    const waUrl = `https://wa.me/${waNumber}?text=${buildWhatsAppMessage()}`;
+    const waText = buildWhatsAppMessage();
+    const isMobile = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+    const waUrl = isMobile
+      ? `whatsapp://send?phone=${waNumber}&text=${waText}`
+      : `https://api.whatsapp.com/send?phone=${waNumber}&text=${waText}`;
     clearCart();
     window.location.href = waUrl;
   };
