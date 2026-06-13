@@ -140,9 +140,9 @@ export default function CheckoutPage() {
     }
 
     const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
-    const waUrl = `https://api.whatsapp.com/send?phone=${waNumber}&text=${buildWhatsAppMessage()}`;
+    const waUrl = `https://wa.me/${waNumber}?text=${buildWhatsAppMessage()}`;
     window.location.href = waUrl;
-    setTimeout(() => clearCart(), 500);
+    setTimeout(() => clearCart(), 1000);
   };
 
   if (items.length === 0 && step < 2) {
