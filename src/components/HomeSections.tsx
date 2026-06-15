@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShieldCheck, Truck, Star, Headphones } from 'lucide-react';
+import { imgUrl } from '@/lib/images';
 
 interface SiteContent {
   hero?: { badge?: string; heading?: string; subtitle?: string; bgImage?: string; imageOnly?: boolean };
@@ -101,14 +102,14 @@ export default function HomeSections({ categories, initialContent, categoryProdu
       {/* ─── Hero ──────────────────────────────────────────────────────── */}
       <section className={`relative overflow-hidden bg-charcoal ${imageOnly ? 'min-h-[50vh] sm:min-h-[70vh]' : 'min-h-[85vh] flex items-center justify-center'}`}>
         <div className="absolute inset-0">
-          <Image
-            src={heroBg}
-            alt="Luxury watches"
-            fill
-            className={`object-cover ${imageOnly ? '' : 'opacity-40'}`}
-            priority
-            unoptimized
-          />
+              <Image
+                src={imgUrl(heroBg, 1800)}
+                alt="Luxury watches"
+                fill
+                className={`object-cover ${imageOnly ? '' : 'opacity-40'}`}
+                priority
+                unoptimized
+              />
         </div>
 
         {!imageOnly && (
@@ -193,7 +194,7 @@ export default function HomeSections({ categories, initialContent, categoryProdu
                 className="relative group overflow-hidden aspect-[4/3] bg-gray-100 w-full"
               >
                 <Image
-                  src={catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || categoryProductImages[cat.slug] || Object.values(DEFAULT_CATEGORY_IMAGES)[0]}
+                  src={imgUrl(catImages[cat.slug] || DEFAULT_CATEGORY_IMAGES[cat.slug] || categoryProductImages[cat.slug] || Object.values(DEFAULT_CATEGORY_IMAGES)[0], 600)}
                   alt={cat.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"

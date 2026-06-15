@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext';
 import { createOrder, getSiteContent } from '@/lib/supabase';
 import { formatMK } from '@/components/ProductCard';
 import { CheckoutFormData, DeliveryMethod } from '@/lib/types';
+import { imgUrl } from '@/lib/images';
 
 const DEFAULT_DELIVERY_OPTIONS: { value: DeliveryMethod; label: string; fee: number; desc: string }[] = [
   { value: 'same_day', label: 'Same Day Delivery', fee: 2000, desc: 'Available in Lilongwe. Order before 2PM.' },
@@ -182,12 +183,13 @@ export default function CheckoutPage() {
           </h3>
           <div className="space-y-3">
             {items.map(item => (
-              <div key={item.product.id} className="flex items-center gap-3">
+              <div key={item.itemKey} className="flex items-center gap-3">
                 <div className="relative w-12 h-12 shrink-0 bg-gray-50 overflow-hidden">
                   <Image
                     src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
                     alt={item.product.name}
                     fill
+                    unoptimized
                     className="object-cover"
                   />
                 </div>
@@ -197,21 +199,21 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                    onClick={() => updateQuantity(item.itemKey, item.quantity - 1)}
                     className="w-7 h-7 flex items-center justify-center border border-gray-200 text-gray-600 text-sm hover:bg-gray-50 transition-colors"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    onClick={() => updateQuantity(item.itemKey, item.quantity + 1)}
                     className="w-7 h-7 flex items-center justify-center border border-gray-200 text-gray-600 text-sm hover:bg-gray-50 transition-colors"
                   >
                     +
                   </button>
                 </div>
                 <button
-                  onClick={() => removeItem(item.product.id)}
+                  onClick={() => removeItem(item.itemKey)}
                   className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
                   title="Remove"
                 >
@@ -341,10 +343,10 @@ export default function CheckoutPage() {
                     <span>Product</span><span>Amount</span>
                   </div>
                   {items.map(item => (
-                    <div key={item.product.id} className="flex items-center gap-3">
+                    <div key={item.itemKey} className="flex items-center gap-3">
                       <div className="relative w-12 h-12 shrink-0 bg-gray-100">
                         <Image
-                          src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
+                          src={imgUrl(item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80', 200)}
                           alt={item.product.name}
                           fill
                           className="object-cover"
@@ -354,20 +356,20 @@ export default function CheckoutPage() {
                         <p className="text-xs font-bold uppercase truncate">{item.product.name}</p>
                         <div className="flex items-center gap-1 mt-0.5">
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.itemKey, item.quantity - 1)}
                             className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
                           >
                             −
                           </button>
                           <span className="w-5 text-center text-[10px] font-medium">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.itemKey, item.quantity + 1)}
                             className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
                           >
                             +
                           </button>
                           <button
-                            onClick={() => removeItem(item.product.id)}
+                            onClick={() => removeItem(item.itemKey)}
                             className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
                             title="Remove"
                           >
@@ -434,10 +436,10 @@ export default function CheckoutPage() {
               </h3>
               <div className="space-y-3 mb-5">
                 {items.map(item => (
-                  <div key={item.product.id} className="flex items-center gap-3">
+                  <div key={item.itemKey} className="flex items-center gap-3">
                     <div className="relative w-14 h-14 shrink-0 bg-gray-50">
                       <Image
-                        src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
+                        src={imgUrl(item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80', 200)}
                         alt={item.product.name}
                         fill
                         className="object-cover"
@@ -451,20 +453,20 @@ export default function CheckoutPage() {
                       <p className="text-xs text-gray-400">{formatMK(item.product.price)}</p>
                       <div className="flex items-center gap-1 mt-1">
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.itemKey, item.quantity - 1)}
                           className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
                         >
                           −
                         </button>
                         <span className="w-5 text-center text-[10px] font-medium">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.itemKey, item.quantity + 1)}
                           className="w-5 h-5 flex items-center justify-center border border-gray-200 text-gray-600 text-[10px] hover:bg-gray-50"
                         >
                           +
                         </button>
                         <button
-                          onClick={() => removeItem(item.product.id)}
+                          onClick={() => removeItem(item.itemKey)}
                           className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
                           title="Remove"
                         >

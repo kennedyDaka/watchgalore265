@@ -11,6 +11,7 @@ import { getProductById, getProducts } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/lib/types';
 import { formatMK } from '@/components/ProductCard';
+import { imgUrl } from '@/lib/images';
 import toast from 'react-hot-toast';
 
 export default function ProductPage() {
@@ -66,7 +67,8 @@ export default function ProductPage() {
 
   const handleAddToCart = () => {
     const selectedImage = images[activeImage];
-    addItem({ ...product, images: [selectedImage] }, quantity);
+    const itemKey = `${product.id}__img__${activeImage}`;
+    addItem({ ...product, images: [selectedImage] }, quantity, itemKey);
     toast.success(`${product.name} added to cart`);
   };
 
@@ -89,8 +91,9 @@ export default function ProductPage() {
           <div>
             <div className="w-full aspect-square bg-gray-50 relative overflow-hidden rounded-none">
               <img
-                src={images[activeImage]}
+                src={imgUrl(images[activeImage], 800)}
                 alt={product.name}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
               {product.stock === 0 && (
@@ -109,7 +112,7 @@ export default function ProductPage() {
                         i === activeImage ? 'border-white' : 'border-white/50'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={imgUrl(img, 100)} alt="" loading="lazy" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -130,11 +133,6 @@ export default function ProductPage() {
 
             <div className="flex items-center gap-3 mb-6">
               <span className="text-2xl font-black text-mk">{formatMK(product.price)}</span>
-              {product.stock > 0 && product.stock <= 3 && (
-                <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                  Only {product.stock} left
-                </span>
-              )}
               {product.stock === 0 && (
                 <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded">
                   Out of stock
@@ -165,7 +163,7 @@ export default function ProductPage() {
                       </button>
                       <span className="w-10 text-center text-sm font-medium">{quantity}</span>
                       <button
-                        onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                        onClick={() => setQuantity(q => Math.min(99, q + 1))}
                         className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors text-lg leading-none"
                       >
                         +

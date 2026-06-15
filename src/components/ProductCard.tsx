@@ -5,17 +5,19 @@ import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { Product } from '@/lib/types';
 import { useCart } from '@/context/CartContext';
+import { imgUrl } from '@/lib/images';
 import toast from 'react-hot-toast';
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
 export function formatMK(amount: number): string {
   return `MK${amount.toLocaleString()}`;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const { addItem } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -33,11 +35,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Image */}
       <div className="relative overflow-hidden bg-gray-50 aspect-square mb-3 w-full">
         <Image
-          src={primaryImage}
+          src={imgUrl(primaryImage, 400)}
           alt={product.name}
           fill
+          priority={priority}
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          unoptimized
         />
         {product.stock === 0 && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">

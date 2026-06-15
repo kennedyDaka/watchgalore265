@@ -43,6 +43,7 @@ export interface Order {
 export interface CartItem {
   product: Product;
   quantity: number;
+  itemKey: string;
 }
 
 export interface CheckoutFormData {
