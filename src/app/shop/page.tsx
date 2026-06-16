@@ -116,35 +116,55 @@ export default function ShopPage() {
 
         {/* Filters row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5 sm:mb-6">
-          {/* Category pills */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => handleCategoryChange('all')}
-              className={`px-3 sm:px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
-                category === 'all'
-                  ? 'bg-accent border-accent text-white'
-                  : 'border-gray-300 text-gray-600 hover:border-accent hover:text-accent'
-              }`}
-            >
-              ALL
-            </button>
-            {categories.map(cat => (
+          {/* Category — dropdown on mobile, pills on desktop */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Mobile dropdown */}
+            <div className="flex md:hidden items-center gap-2 w-full">
+              <SlidersHorizontal size={14} className="text-gray-400 shrink-0" />
+              <select
+                value={category}
+                onChange={e => handleCategoryChange(e.target.value)}
+                className="text-sm border border-gray-200 py-1.5 px-2 focus:outline-none focus:border-accent bg-white text-gray-700 w-full"
+              >
+                <option value="all">ALL</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.slug}>
+                    {cat.name.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Desktop pills */}
+            <div className="hidden md:flex items-center gap-2 flex-wrap">
               <button
-                key={cat.id}
-                onClick={() => handleCategoryChange(cat.slug)}
-                className={`px-3 sm:px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
-                  category === cat.slug
+                onClick={() => handleCategoryChange('all')}
+                className={`px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
+                  category === 'all'
                     ? 'bg-accent border-accent text-white'
                     : 'border-gray-300 text-gray-600 hover:border-accent hover:text-accent'
                 }`}
               >
-                {cat.name.toUpperCase()}
+                ALL
               </button>
-            ))}
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.slug)}
+                  className={`px-4 py-1.5 text-xs font-bold tracking-widest uppercase border transition-all rounded-full ${
+                    category === cat.slug
+                      ? 'bg-accent border-accent text-white'
+                      : 'border-gray-300 text-gray-600 hover:border-accent hover:text-accent'
+                  }`}
+                >
+                  {cat.name.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Sort */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <SlidersHorizontal size={14} className="text-gray-400" />
             <select
               value={sort}

@@ -52,7 +52,7 @@ export default function Navbar() {
                 WATCHGALORE
                 <span className="text-accent">265</span>
               </div>
-              <div className="text-[9px] tracking-widest text-gray-500 font-heading mt-0.5 hidden sm:block">
+              <div className="text-[9px] tracking-widest text-gray-500 font-heading mt-0.5">
                 And Other Men&apos;s Essentials
               </div>
             </div>
