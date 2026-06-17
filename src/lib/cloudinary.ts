@@ -10,6 +10,8 @@ export async function uploadToCloudinary(file: File, folder?: string): Promise<s
     throw new Error(body?.error || `Upload failed (${res.status})`);
   }
 
+  console.log('[/api/upload] response OK');
+
   const data = await res.json();
   return data.url as string;
 }

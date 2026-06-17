@@ -73,8 +73,10 @@ function ProductModal({
       );
       setImages(prev => [...prev, ...urls]);
       toast.success(`${urls.length} image(s) uploaded`);
-    } catch {
-      toast.error('Image upload failed');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Image upload failed';
+      console.error('Image upload error:', e);
+      toast.error(msg);
     } finally {
       setUploading(false);
     }

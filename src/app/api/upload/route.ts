@@ -53,9 +53,9 @@ export async function POST(req: NextRequest) {
 
   if (!cloudRes.ok) {
     const body = await cloudRes.json().catch(() => null);
-    const msg = body?.error?.message || `Cloudinary returned ${cloudRes.status}`;
-    console.error('Cloudinary API error:', cloudRes.status, JSON.stringify(body?.error));
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const cloudMsg = body?.error?.message || JSON.stringify(body?.error) || `Cloudinary returned ${cloudRes.status}`;
+    console.error('Cloudinary API error:', cloudRes.status, cloudMsg, body);
+    return NextResponse.json({ error: cloudMsg }, { status: 500 });
   }
 
   const data = await cloudRes.json();
