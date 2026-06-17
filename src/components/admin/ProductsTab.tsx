@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, X, Upload, Star, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Star, RefreshCw, Copy } from 'lucide-react';
 import {
   getAllProducts,
   createProduct,
@@ -11,6 +11,7 @@ import {
   uploadProductImage,
   appendProductImage,
   createDraftProduct,
+  splitProductImages,
   getCategories,
 } from '@/lib/supabase';
 import { Product, Category } from '@/lib/types';
@@ -340,12 +341,175 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function SplitModal({
+  product,
+  onClose,
+  onSaved,
+  categories,
+}: {
+  product: Product;
+  onClose: () => void;
+  onSaved: () => void;
+  categories: DbCategory[];
+}) {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [name, setName] = useState(product.name + ' (Split)');
+  const [category, setCategory] = useState(product.category);
+  const [price, setPrice] = useState(String(product.price));
+  const [stock, setStock] = useState(String(product.stock));
+  const [colors, setColors] = useState((product.colors || []).join(', '));
+  const [splitting, setSplitting] = useState(false);
+
+  const toggleImage = (url: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url); else next.add(url);
+      return next;
+    });
+  };
+
+  const handleSplit = async () => {
+    if (selected.size === 0) { toast.error('Select at least one image'); return; }
+    if (!name.trim() || !price || !stock || !category) {
+      toast.error('Name, price, stock and category are required');
+      return;
+    }
+    setSplitting(true);
+    try {
+      await splitProductImages(
+        product.id,
+        Array.from(selected),
+        {
+          name: name.trim(),
+          description: '',
+          category,
+          price: Number(price),
+          stock: Number(stock),
+          featured: false,
+          colors: colors ? colors.split(',').map(c => c.trim()).filter(Boolean) : [],
+        }
+      );
+      toast.success(`Split into "${name.trim()}"`);
+      onSaved();
+      onClose();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Split failed';
+      toast.error(msg);
+    } finally {
+      setSplitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex sm:items-start sm:justify-center sm:bg-black/40 sm:overflow-y-auto sm:py-8 sm:px-4 bg-white sm:bg-transparent">
+      <div className="bg-white w-full sm:max-w-xl sm:shadow-xl min-h-screen sm:min-h-0 sm:my-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-black uppercase tracking-widest">Split Product</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <p className="text-xs text-gray-500">
+            Select images to move into a new product from <strong className="text-gray-800">{product.name}</strong>.
+          </p>
+
+          {/* Image grid with checkboxes */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+              Select images to split ({selected.size} of {product.images.length})
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {product.images.map((img, i) => {
+                const isSelected = selected.has(img);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => toggleImage(img)}
+                    className={`relative w-16 h-16 overflow-hidden border-2 transition-all ${
+                      isSelected ? 'border-accent ring-1 ring-accent' : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <Image src={img} alt="" fill className="object-cover" sizes="64px" />
+                    {isSelected && (
+                      <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
+                        <span className="w-5 h-5 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">✓</span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* New product details */}
+          <Field label="New Product Name *">
+            <input value={name} onChange={e => setName(e.target.value)} className="input-base" placeholder="e.g. Premium Belts" />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Category *">
+              <select value={category} onChange={e => setCategory(e.target.value)} className="input-base capitalize">
+                <option value="" disabled>Select</option>
+                {categories.map(c => <option key={c.id} value={c.slug} className="capitalize">{c.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Price (MK) *">
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="input-base" min="0" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Stock Qty *">
+              <input type="number" value={stock} onChange={e => setStock(e.target.value)} className="input-base" min="0" />
+            </Field>
+            <Field label="Colors (comma-sep)">
+              <input value={colors} onChange={e => setColors(e.target.value)} className="input-base" placeholder="Black, Brown" />
+            </Field>
+          </div>
+        </div>
+
+        <div className="flex gap-3 px-6 pb-6">
+          <button onClick={onClose} className="flex-1 py-3 border border-gray-200 text-xs font-bold uppercase tracking-widest hover:border-gray-400 transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleSplit}
+            disabled={splitting || selected.size === 0}
+            className="flex-1 py-3 bg-black text-white text-xs font-bold uppercase tracking-widest hover:bg-charcoal transition-colors disabled:opacity-60"
+          >
+            {splitting ? 'Splitting…' : `Split ${selected.size} Image(s)`}
+          </button>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .input-base {
+          width: 100%;
+          padding: 0.625rem 0.875rem;
+          border: 1px solid #e5e7eb;
+          background: #f9fafb;
+          font-size: 0.875rem;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .input-base:focus {
+          border-color: #2563eb;
+          background: white;
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default function ProductsTab() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | Category>('all');
   const [modalProduct, setModalProduct] = useState<Product | null | undefined>(undefined);
+  const [splitProduct, setSplitProduct] = useState<Product | null>(null);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
   const fetch = useCallback(async () => {
@@ -445,7 +609,14 @@ export default function ProductsTab() {
                   <td className="py-3 px-3">
                     <div className="relative w-10 h-10 bg-gray-100">
                       {p.images?.[0] ? (
-                        <Image src={p.images[0]} alt="" fill className="object-cover" sizes="40px" />
+                        <>
+                          <Image src={p.images[0]} alt="" fill className="object-cover" sizes="40px" />
+                          {p.images.length > 1 && (
+                            <span className="absolute -bottom-1 -right-1 bg-black text-white text-[8px] font-bold px-1 leading-4 rounded-full">
+                              +{p.images.length - 1}
+                            </span>
+                          )}
+                        </>
                       ) : (
                         <div className="w-full h-full bg-gray-100" />
                       )}
@@ -470,6 +641,13 @@ export default function ProductsTab() {
                   <td className="py-3 px-3">
                     <div className="flex items-center justify-end gap-1">
                       <button
+                        onClick={() => setSplitProduct(p)}
+                        className="p-1.5 text-gray-400 hover:text-purple-500 transition-colors"
+                        title="Split images into new product"
+                      >
+                        <Copy size={14} />
+                      </button>
+                      <button
                         onClick={() => setModalProduct(p)}
                         className="p-1.5 text-gray-400 hover:text-accent transition-colors"
                         title="Edit"
@@ -492,11 +670,21 @@ export default function ProductsTab() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Edit / Add Modal */}
       {modalProduct !== undefined && (
         <ProductModal
           product={modalProduct}
           onClose={() => setModalProduct(undefined)}
+          onSaved={fetch}
+          categories={dbCategories}
+        />
+      )}
+
+      {/* Split Modal */}
+      {splitProduct && (
+        <SplitModal
+          product={splitProduct}
+          onClose={() => setSplitProduct(null)}
           onSaved={fetch}
           categories={dbCategories}
         />

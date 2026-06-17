@@ -463,6 +463,77 @@ export async function createDraftProduct(draft: {
   return data as { id: string; name: string };
 }
 
+/**
+ * Split selected images out of a product into a new product.
+ * The images are MOVED (removed from the original).
+ */
+export async function splitProductImages(
+  originalId: string,
+  imagesToMove: string[],
+  newProduct: {
+    name: string;
+    description: string;
+    category: string;
+    price: number;
+    brand?: string | null;
+    stock: number;
+    featured: boolean;
+    colors?: string[];
+  }
+) {
+  await requireAuth();
+
+  // 1. Read original product
+  const { data: original, error: readError } = await supabase
+    .from('products')
+    .select('images')
+    .eq('id', originalId)
+    .single();
+  if (readError) throw readError;
+
+  const remainingImages = (original?.images || []).filter(
+    (img: string) => !imagesToMove.includes(img)
+  );
+
+  // 2. Create new product with moved images
+  const categoryId = await ensureCategory(newProduct.category);
+  const slug =
+    newProduct.name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '') || 'split';
+
+  const { error: insertError } = await supabase.from('products').insert([
+    {
+      name: newProduct.name,
+      description: newProduct.description,
+      category_id: categoryId,
+      price: newProduct.price,
+      brand: newProduct.brand || null,
+      stock_quantity: newProduct.stock,
+      in_stock: newProduct.stock > 0,
+      featured: newProduct.featured,
+      images: imagesToMove,
+      image_url: imagesToMove[0] || null,
+      slug: `${slug}-${Date.now()}`,
+      tagline: '',
+      colors: newProduct.colors || [],
+    },
+  ]);
+  if (insertError) throw insertError;
+
+  // 3. Update original product — remove moved images
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({
+      images: remainingImages,
+      image_url: remainingImages[0] || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', originalId);
+  if (updateError) throw updateError;
+}
+
 // ─── Site Content (editable homepage) ────────────────────────────
 
 export async function getSiteContent(): Promise<Record<string, unknown>> {
