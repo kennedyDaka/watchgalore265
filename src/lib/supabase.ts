@@ -392,6 +392,77 @@ export async function uploadProductImage(file: File, productId: string) {
   return uploadToCloudinary(file, `products/${productId}`);
 }
 
+/**
+ * Immediately persist a single image URL to the product row,
+ * so the URL is never lost even if the final "Save" fails.
+ * Throws on error so the caller can show a retry UI.
+ */
+export async function appendProductImage(productId: string, url: string) {
+  await requireAuth();
+  const { data, error: fetchError } = await supabase
+    .from('products')
+    .select('images')
+    .eq('id', productId)
+    .single();
+  if (fetchError) throw fetchError;
+
+  const current: string[] = data?.images || [];
+  if (current.includes(url)) return; // already persisted
+
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({
+      images: [...current, url],
+      image_url: current[0] || url,
+    })
+    .eq('id', productId);
+  if (updateError) throw updateError;
+}
+
+/**
+ * Auto-create a minimal draft product so we have a real ID
+ * to attach images to before the user does the final save.
+ */
+export async function createDraftProduct(draft: {
+  name: string;
+  category?: string;
+  price?: number;
+  stock?: number;
+}) {
+  await requireAuth();
+  let categoryId: string | null = null;
+  if (draft.category) {
+    categoryId = await ensureCategory(draft.category);
+  }
+
+  const slug =
+    draft.name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '') || 'draft';
+
+  const { data, error } = await supabase
+    .from('products')
+    .insert([
+      {
+        name: draft.name,
+        slug: `${slug}-${Date.now()}`,
+        category_id: categoryId,
+        price: draft.price ?? 0,
+        stock_quantity: draft.stock ?? 0,
+        in_stock: (draft.stock ?? 0) > 0,
+        featured: false,
+        images: [],
+        colors: [],
+        tagline: '',
+      },
+    ])
+    .select('id, name')
+    .single();
+  if (error) throw error;
+  return data as { id: string; name: string };
+}
+
 // ─── Site Content (editable homepage) ────────────────────────────
 
 export async function getSiteContent(): Promise<Record<string, unknown>> {

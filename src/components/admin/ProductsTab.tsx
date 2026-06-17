@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, X, Upload, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Upload, Star, RefreshCw } from 'lucide-react';
 import {
   getAllProducts,
   createProduct,
   updateProduct,
   deleteProduct,
   uploadProductImage,
+  appendProductImage,
+  createDraftProduct,
   getCategories,
 } from '@/lib/supabase';
 import { Product, Category } from '@/lib/types';
@@ -62,23 +64,73 @@ function ProductModal({
   const [images, setImages] = useState<string[]>(product?.images || []);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [failedImages, setFailedImages] = useState<Map<string, string>>(new Map());
+
+  // Reset draft and failures when the modal opens for a different product
+  useEffect(() => { setDraftId(null); setFailedImages(new Map()); }, [product]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
+
+    // Ensure we have a real product ID to attach images to
+    let targetId = product?.id || draftId;
+    if (!targetId) {
+      try {
+        const draft = await createDraftProduct({
+          name: form.name.trim() || 'Untitled',
+          category: form.category || undefined,
+          price: form.price ? Number(form.price) : undefined,
+          stock: form.stock ? Number(form.stock) : undefined,
+        });
+        targetId = draft.id;
+        setDraftId(draft.id);
+      } catch {
+        toast.error('Could not create draft product');
+        return;
+      }
+    }
+
     setUploading(true);
+
+    for (const file of files) {
+      let url: string;
+      try {
+        url = await uploadProductImage(file, targetId);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Upload failed';
+        toast.error(msg);
+        continue;
+      }
+
+      // Cloudinary succeeded — persist to DB immediately
+      try {
+        await appendProductImage(targetId!, url);
+        setImages(prev => [...prev, url]);
+        setFailedImages(prev => { const m = new Map(prev); m.delete(url); return m; });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Failed to save image';
+        setFailedImages(prev => new Map(prev).set(url, msg));
+        toast.error(`Uploaded but DB save failed: ${msg}`);
+      }
+    }
+
+    setUploading(false);
+  };
+
+  const handleRetryImage = async (url: string) => {
+    const targetId = product?.id || draftId;
+    if (!targetId) return;
     try {
-      const urls = await Promise.all(
-        files.map(f => uploadProductImage(f, product?.id || `new-${Date.now()}`))
-      );
-      setImages(prev => [...prev, ...urls]);
-      toast.success(`${urls.length} image(s) uploaded`);
+      await appendProductImage(targetId, url);
+      setImages(prev => [...prev, url]);
+      setFailedImages(prev => { const m = new Map(prev); m.delete(url); return m; });
+      toast.success('Image saved');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Image upload failed';
-      console.error('Image upload error:', e);
+      const msg = e instanceof Error ? e.message : 'Retry failed';
+      setFailedImages(prev => new Map(prev).set(url, msg));
       toast.error(msg);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -103,6 +155,10 @@ function ProductModal({
       if (product) {
         await updateProduct(product.id, data);
         toast.success('Product updated');
+      } else if (draftId) {
+        // Draft was auto-created when images were uploaded — update it
+        await updateProduct(draftId, data);
+        toast.success('Product created');
       } else {
         await createProduct(data);
         toast.success('Product created');
@@ -207,6 +263,7 @@ function ProductModal({
               Images
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
+              {/* Successfully saved images */}
               {images.map((img, i) => (
                 <div key={i} className="relative w-16 h-16 group">
                   <Image src={img} alt="" fill className="object-cover" sizes="64px" />
@@ -215,6 +272,19 @@ function ProductModal({
                     className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X size={10} />
+                  </button>
+                </div>
+              ))}
+              {/* Failed DB saves — retry button */}
+              {Array.from(failedImages.entries()).map(([url, errorMsg]) => (
+                <div key={url} className="relative w-16 h-16 border-2 border-red-400">
+                  <Image src={url} alt="" fill className="object-cover" sizes="64px" />
+                  <button
+                    onClick={() => handleRetryImage(url)}
+                    className="absolute inset-0 bg-red-500/60 flex items-center justify-center hover:bg-red-500/80 transition-colors"
+                    title={errorMsg}
+                  >
+                    <RefreshCw size={16} className="text-white" />
                   </button>
                 </div>
               ))}
