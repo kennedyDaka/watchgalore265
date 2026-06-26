@@ -37,6 +37,7 @@ export default function CheckoutPage() {
     deliveryMethod: DEFAULT_DELIVERY_OPTIONS[0].value,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
 
   useEffect(() => {
@@ -115,30 +116,36 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setSubmitting(true);
-    try {
-      const orderData = {
-        order_id: orderId,
-        customer_name: form.fullName,
-        phone: form.phone,
-        location: form.location,
-        delivery_notes: form.deliveryNotes,
-        products: items.map(i => ({
-          product_id: i.product.id,
-          product_name: i.product.name,
-          price: i.product.price,
-          quantity: i.quantity,
-          image: i.product.images?.[0],
-        })),
-        total: grandTotal,
-        delivery_method: form.deliveryMethod,
-        delivery_fee: deliveryFee,
-        status: 'pending',
-      };
+    setSubmitError('');
 
-      await createOrder(orderData).catch(() => {}); // Save to DB; don't block on error
-    } finally {
+    const orderData = {
+      order_id: orderId,
+      customer_name: form.fullName,
+      phone: form.phone,
+      location: form.location,
+      delivery_notes: form.deliveryNotes,
+      products: items.map(i => ({
+        product_id: i.product.id,
+        product_name: i.product.name,
+        price: i.product.price,
+        quantity: i.quantity,
+        image: i.product.images?.[0],
+      })),
+      total: grandTotal,
+      delivery_method: form.deliveryMethod,
+      delivery_fee: deliveryFee,
+      status: 'pending',
+    };
+
+    try {
+      await createOrder(orderData);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Failed to save order');
       setSubmitting(false);
+      return;
     }
+
+    setSubmitting(false);
 
     const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '265888810581';
     const waUrl = `https://wa.me/${waNumber}?text=${buildWhatsAppMessage()}`;
@@ -416,14 +423,21 @@ export default function CheckoutPage() {
                   Continue →
                 </button>
               ) : (
-                <button
-                  onClick={handlePlaceOrder}
-                  disabled={submitting}
+                <>
+                  {submitError && (
+                    <div className="text-xs text-red-600 bg-red-50 border border-red-200 px-4 py-3 mb-3">
+                      {submitError}
+                    </div>
+                  )}
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={submitting}
                   className="flex-1 py-3.5 bg-whatsapp text-white font-bold text-xs tracking-widest uppercase hover:bg-green-600 transition-colors flex items-center justify-center gap-2.5 disabled:opacity-60"
                 >
                   <MessageCircle size={16} />
                   {submitting ? 'Opening WhatsApp…' : 'Place Order on WhatsApp'}
                 </button>
+                </>
               )}
             </div>
           </div>
