@@ -8,6 +8,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  bulkDeleteProducts,
   uploadProductImage,
   appendProductImage,
   createDraftProduct,
@@ -511,6 +512,7 @@ export default function ProductsTab() {
   const [modalProduct, setModalProduct] = useState<Product | null | undefined>(undefined);
   const [splitProduct, setSplitProduct] = useState<Product | null>(null);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -535,6 +537,37 @@ export default function ProductsTab() {
       fetch();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to delete product';
+      toast.error(msg);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map(p => p.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const msg = `Delete ${selectedIds.size} product(s)? This cannot be undone.`;
+    if (!confirm(msg)) return;
+    try {
+      await bulkDeleteProducts(Array.from(selectedIds));
+      toast.success(`${selectedIds.size} product(s) deleted`);
+      setSelectedIds(new Set());
+      fetch();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to delete products';
       toast.error(msg);
     }
   };
@@ -581,6 +614,22 @@ export default function ProductsTab() {
         </button>
       </div>
 
+      {/* Bulk delete bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between mb-4 px-4 py-2.5 bg-red-50 border border-red-200">
+          <span className="text-xs font-semibold text-red-700">
+            {selectedIds.size} product(s) selected
+          </span>
+          <button
+            onClick={handleBulkDelete}
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-red-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition-colors"
+          >
+            <Trash2 size={13} />
+            Delete Selected
+          </button>
+        </div>
+      )}
+
       {/* Product table */}
       {loading ? (
         <div className="space-y-2">
@@ -595,6 +644,14 @@ export default function ProductsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
+                <th className="py-3 px-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 accent-accent cursor-pointer"
+                  />
+                </th>
                 <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 w-14"></th>
                 <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Name</th>
                 <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 hidden sm:table-cell">Category</th>
@@ -606,6 +663,14 @@ export default function ProductsTab() {
             <tbody className="divide-y divide-gray-50">
               {filtered.map(p => (
                 <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="py-3 px-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(p.id)}
+                      onChange={() => toggleSelect(p.id)}
+                      className="w-4 h-4 accent-accent cursor-pointer"
+                    />
+                  </td>
                   <td className="py-3 px-3">
                     <div className="relative w-10 h-10 bg-gray-100">
                       {p.images?.[0] ? (

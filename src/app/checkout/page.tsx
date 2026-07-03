@@ -140,7 +140,8 @@ export default function CheckoutPage() {
     try {
       await createOrder(orderData);
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Failed to save order');
+      const errMsg = e instanceof Error ? e.message : typeof e === 'object' && e ? JSON.stringify(e) : String(e);
+      setSubmitError(errMsg);
       setSubmitting(false);
       return;
     }

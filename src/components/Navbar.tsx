@@ -27,7 +27,7 @@ export default function Navbar() {
   const NAV_LINKS = [
     { href: '/shop', label: 'SHOP' },
     ...categories.map(c => ({
-      href: `/shop?category=${c.slug}`,
+      href: `/shop?category=${encodeURIComponent(c.slug)}`,
       label: c.name.toUpperCase(),
     })),
   ];

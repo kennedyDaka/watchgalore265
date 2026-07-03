@@ -81,9 +81,6 @@ export default function ShopPage() {
     router.replace(`/shop?${params.toString()}`, { scroll: false });
   };
 
-  const productCount = products.length;
-  const pieceLabel = productCount === 1 ? '1 piece' : `${productCount} pieces`;
-
   return (
     <>
       <Navbar />
@@ -179,11 +176,6 @@ export default function ShopPage() {
             </select>
           </div>
         </div>
-
-        {/* Count */}
-        <p className="text-xs text-gray-400 uppercase tracking-wider mb-5">
-          {loading ? 'Loading…' : pieceLabel}
-        </p>
 
         {/* Product grid */}
         {loading ? (

@@ -28,6 +28,7 @@ export default function ProductPage() {
       try {
         const p = await getProductById(id);
         setProduct(p);
+        document.title = `${p.name} — WatchGalore265`;
         const rel = await getProducts(p.category);
         setRelated(rel.filter((r: Product) => r.id !== id).slice(0, 4));
       } catch {
@@ -186,7 +187,7 @@ export default function ProductPage() {
               <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Category:</span>
                 <Link
-                  href={`/shop?category=${product.category}`}
+                  href={`/shop?category=${encodeURIComponent(product.category)}`}
                   className="text-xs font-semibold uppercase tracking-wider text-accent hover:underline capitalize"
                 >
                   {product.category}

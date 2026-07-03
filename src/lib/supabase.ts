@@ -7,12 +7,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key',
-  {
-    global: {
-      fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-        fetch(url, { ...options, cache: 'no-store' }),
-    },
-  }
 );
 
 // Ensure the client has a valid session before write operations.
@@ -153,27 +147,20 @@ export async function createOrder(orderData: {
   delivery_fee: number;
   status: string;
 }) {
-  const payload = {
-    order_code: orderData.order_id,
-    customer_name: orderData.customer_name,
-    customer_phone: orderData.phone,
-    customer_location: orderData.location,
-    notes: orderData.delivery_notes || '',
-    items: orderData.products,
-    subtotal: orderData.total - orderData.delivery_fee,
-    total: orderData.total,
-    delivery_method: orderData.delivery_method,
-    delivery_fee: orderData.delivery_fee,
-    status: orderData.status,
-  };
-
-  const { data, error } = await supabase
-    .from('orders')
-    .insert([payload])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const res = await fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+    if (res.ok) return await res.json();
+    if (attempt === 1) {
+      await new Promise(r => setTimeout(r, 500));
+    } else {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || res.statusText);
+    }
+  }
 }
 
 export async function getOrders(status?: string) {
@@ -332,9 +319,53 @@ export async function updateProduct(id: string, productData: {
   return normalizeProduct(data);
 }
 
+export async function deleteCloudinaryImages(urls: string[]) {
+  const cloudinaryUrls = urls.filter(u => u && u.includes('res.cloudinary.com'));
+  if (cloudinaryUrls.length === 0) return;
+
+  const res = await fetch('/api/delete-images', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ urls: cloudinaryUrls }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || `Failed to delete images (${res.status})`);
+  }
+}
+
 export async function deleteProduct(id: string) {
   await requireAuth();
+
+  const { data: product } = await supabase
+    .from('products')
+    .select('images')
+    .eq('id', id)
+    .single();
+
+  if (product?.images?.length) {
+    await deleteCloudinaryImages(product.images).catch(() => {});
+  }
+
   const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function bulkDeleteProducts(ids: string[]) {
+  await requireAuth();
+  if (ids.length === 0) return;
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('id, images')
+    .in('id', ids);
+
+  const allUrls = (products || []).flatMap(p => p.images || []);
+  if (allUrls.length) {
+    await deleteCloudinaryImages(allUrls).catch(() => {});
+  }
+
+  const { error } = await supabase.from('products').delete().in('id', ids);
   if (error) throw error;
 }
 

@@ -190,7 +190,7 @@ export default function HomeSections({ categories, initialContent, categoryProdu
             {categories.map(cat => (
               <Link
                 key={cat.id}
-                href={`/shop?category=${cat.slug}`}
+                href={`/shop?category=${encodeURIComponent(cat.slug)}`}
                 className="relative group overflow-hidden aspect-[4/3] bg-gray-100 w-full"
               >
                 <Image
