@@ -22,7 +22,7 @@ interface TestimonialItem {
 interface DeliveryOption {
   value: string;
   label: string;
-  fee: number;
+  fee: number | string;
   desc: string;
 }
 
@@ -525,9 +525,9 @@ export default function PromotionsTab() {
                             className="input-base" placeholder="same_day" />
                         </Field>
                         <Field label="Fee (MK)">
-                          <input type="number" value={opt.fee}
-                            onChange={e => { const next = [...deliveryOptions]; next[i] = { ...next[i], fee: Number(e.target.value) }; setDeliveryOptions(next); }}
-                            className="input-base" min="0" />
+                          <input type="text" value={opt.fee}
+                            onChange={e => { const next = [...deliveryOptions]; next[i] = { ...next[i], fee: e.target.value }; setDeliveryOptions(next); }}
+                            className="input-base" placeholder="e.g. 5000 or 5,000-10,000" />
                         </Field>
                       </div>
                     </div>

@@ -12,7 +12,7 @@ import { formatMK } from '@/components/ProductCard';
 import { CheckoutFormData, DeliveryMethod } from '@/lib/types';
 import { imgUrl } from '@/lib/images';
 
-const DEFAULT_DELIVERY_OPTIONS: { value: DeliveryMethod; label: string; fee: number; desc: string }[] = [
+const DEFAULT_DELIVERY_OPTIONS: { value: DeliveryMethod; label: string; fee: number | string; desc: string }[] = [
   { value: 'same_day', label: 'Same Day Delivery', fee: 2000, desc: 'Available in Lilongwe. Order before 2PM.' },
   { value: 'pickup', label: 'Pickup', fee: 0, desc: 'Collect from our location. Free.' },
   { value: 'standard', label: 'Standard Delivery', fee: 3000, desc: 'Nationwide. 2\u20134 business days.' },
@@ -57,7 +57,11 @@ export default function CheckoutPage() {
   }, []);
 
   const selectedDelivery = deliveryOptions.find(d => d.value === form.deliveryMethod) || deliveryOptions[0];
-  const deliveryFee = selectedDelivery?.fee ?? 0;
+  const rawFee = selectedDelivery?.fee ?? 0;
+  const deliveryFee = typeof rawFee === 'number' ? rawFee : (Number(String(rawFee).replace(/[^0-9.-]/g, '')) || 0);
+  const feeLabel = typeof rawFee === 'number'
+    ? (rawFee === 0 ? 'FREE' : formatMK(rawFee))
+    : String(rawFee);
   const grandTotal = totalPrice + deliveryFee;
   const orderId = generateOrderId();
 
@@ -106,7 +110,7 @@ export default function CheckoutPage() {
       `\uD83D\uDED2 Items\n${itemLines}\n\n` +
       `\uD83D\uDCB0 Total\n` +
       `Subtotal: ${formatMK(totalPrice)}\n` +
-      `Delivery: ${deliveryFee === 0 ? 'FREE' : formatMK(deliveryFee)}\n` +
+      `Delivery: ${feeLabel}\n` +
       `Total: ${formatMK(grandTotal)}\n\n` +
       `\uD83D\uDE9A Delivery\n${deliveryLabel}\n${form.location}` +
       `${notesBlock}\n\n` +
@@ -333,7 +337,7 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <span className="text-sm font-bold text-gray-900">
-                        {opt.fee === 0 ? 'FREE' : formatMK(opt.fee)}
+                        {typeof opt.fee === 'number' ? (opt.fee === 0 ? 'FREE' : formatMK(opt.fee)) : opt.fee}
                       </span>
                     </button>
                   ))}
@@ -392,7 +396,7 @@ export default function CheckoutPage() {
 
                 <div className="space-y-2 text-sm mb-6">
                   <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span className="font-medium">{formatMK(totalPrice)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Delivery ({selectedDelivery.label})</span><span className="font-medium">{deliveryFee === 0 ? 'FREE' : formatMK(deliveryFee)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Delivery ({selectedDelivery.label})</span><span className="font-medium">{feeLabel}</span></div>
                   <div className="flex justify-between pt-3 border-t border-gray-200 font-black text-base"><span>Total</span><span>{formatMK(grandTotal)}</span></div>
                 </div>
 
@@ -495,7 +499,7 @@ export default function CheckoutPage() {
               </div>
               <div className="border-t border-gray-100 pt-4 space-y-1.5 text-sm">
                 <div className="flex justify-between text-gray-500 text-xs"><span>Subtotal</span><span>{formatMK(totalPrice)}</span></div>
-                <div className="flex justify-between text-gray-500 text-xs"><span>Delivery</span><span>{deliveryFee === 0 ? 'FREE' : formatMK(deliveryFee)}</span></div>
+                <div className="flex justify-between text-gray-500 text-xs"><span>Delivery</span><span>{feeLabel}</span></div>
                 <div className="flex justify-between font-black pt-2 border-t border-gray-100 text-base"><span>Total</span><span>{formatMK(grandTotal)}</span></div>
               </div>
             </div>
