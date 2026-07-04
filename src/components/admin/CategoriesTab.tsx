@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
-import { getCategories, createCategory, deleteCategory, getAllProducts } from '@/lib/supabase';
+import { Plus, Trash2, Pencil, X } from 'lucide-react';
+import { getCategories, createCategory, deleteCategory, updateCategory, getAllProducts } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface CategoryRow {
@@ -20,6 +20,8 @@ export default function CategoriesTab() {
   const [newSlug, setNewSlug] = useState('');
   const [newName, setNewName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [editingCat, setEditingCat] = useState<{ id: string; name: string; slug: string } | null>(null);
+  const [editName, setEditName] = useState('');
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -79,6 +81,23 @@ export default function CategoriesTab() {
     }
   };
 
+  const handleEdit = async () => {
+    if (!editingCat) return;
+    if (!editName.trim()) { toast.error('Name is required'); return; }
+    setSaving(true);
+    try {
+      await updateCategory(editingCat.id, { name: editName.trim() });
+      toast.success('Category updated');
+      setEditingCat(null);
+      fetch();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to update category';
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -122,6 +141,36 @@ export default function CategoriesTab() {
         </div>
       )}
 
+      {/* Edit modal */}
+      {editingCat && (
+        <div className="fixed inset-0 z-50 flex sm:items-center sm:justify-center sm:bg-black/40 sm:px-4 bg-white sm:bg-transparent">
+          <div className="bg-white w-full sm:max-w-md sm:shadow-xl min-h-screen sm:min-h-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-sm font-black uppercase tracking-widest">Edit Category</h2>
+              <button onClick={() => setEditingCat(null)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Slug</label>
+                <p className="w-full px-4 py-2.5 border border-gray-200 bg-gray-100 text-sm text-gray-400 font-mono select-all">{editingCat.slug}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Name</label>
+                <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Display name"
+                  className="w-full px-4 py-2.5 border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:border-accent focus:bg-white" />
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={() => setEditingCat(null)} className="flex-1 py-2.5 border border-gray-200 text-xs font-bold uppercase tracking-widest hover:border-gray-400">Cancel</button>
+              <button onClick={handleEdit} disabled={saving}
+                className="flex-1 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest hover:bg-charcoal disabled:opacity-60">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Categories table */}
       {loading ? (
         <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 bg-gray-50 animate-pulse" />)}</div>
@@ -132,22 +181,34 @@ export default function CategoriesTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Slug</th>
-                <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Name</th>
+                <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Category</th>
                 <th className="text-center py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Products</th>
-                <th className="py-3 px-3 w-16"></th>
+                <th className="text-right py-3 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 w-24">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {categories.map(cat => (
                 <tr key={cat.id} className="hover:bg-gray-50/50">
-                  <td className="py-3 px-3 font-mono text-xs text-gray-500">{cat.slug}</td>
-                  <td className="py-3 px-3 font-bold text-xs uppercase tracking-wide">{cat.name}</td>
-                  <td className="py-3 px-3 text-center text-xs text-gray-500">{cat.product_count}</td>
                   <td className="py-3 px-3">
-                    <button onClick={() => handleDelete(cat)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
-                      <Trash2 size={14} />
+                    <button onClick={() => { setEditingCat(cat); setEditName(cat.name); }} className="text-left group">
+                      <span className="text-xs font-bold uppercase tracking-wide group-hover:text-accent transition-colors">{cat.name}</span>
+                      <span className="block text-[11px] font-mono text-gray-400 mt-0.5">{cat.slug}</span>
                     </button>
+                  </td>
+                  <td className="py-3 px-3 text-center text-xs text-gray-500">{cat.product_count}</td>
+                  <td className="py-3 px-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => { setEditingCat(cat); setEditName(cat.name); }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-[11px] font-bold uppercase tracking-wider text-gray-500 hover:border-accent hover:text-accent transition-colors"
+                      >
+                        <Pencil size={12} />
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(cat)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -41,6 +41,7 @@ function normalizeProduct(row: any) {
     tagline: row.tagline || '',
     // category slug comes from the joined categories table
     category: row.categories?.slug || row.category_slug || '',
+    category_name: row.categories?.name || '',
     price: row.price,
     // prefer multi-image array; fall back to image_url
     images: row.images?.length ? row.images : (row.image_url ? [row.image_url] : []),
@@ -415,6 +416,15 @@ export async function deleteCategory(id: string) {
   const { error } = await supabase
     .from('categories')
     .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateCategory(id: string, data: { name?: string }) {
+  await requireAuth();
+  const { error } = await supabase
+    .from('categories')
+    .update(data)
     .eq('id', id);
   if (error) throw error;
 }

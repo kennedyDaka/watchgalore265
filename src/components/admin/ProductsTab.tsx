@@ -601,7 +601,7 @@ export default function ProductsTab() {
                 categoryFilter === c ? 'bg-accent border-accent text-white' : 'border-gray-200 text-gray-600 hover:border-accent'
               }`}
             >
-              {c}
+              {c === 'all' ? 'All' : dbCategories.find(x => x.slug === c)?.name || c}
             </button>
           ))}
         </div>
@@ -695,7 +695,7 @@ export default function ProductsTab() {
                     {p.brand && <span className="text-xs text-gray-400">{p.brand}</span>}
                   </td>
                   <td className="py-3 px-3 hidden sm:table-cell">
-                    <span className="text-xs text-gray-500 capitalize">{p.category}</span>
+                    <span className="text-xs text-gray-500 capitalize">{p.category_name || p.category}</span>
                   </td>
                   <td className="py-3 px-3 text-right font-bold text-xs">{formatMK(p.price)}</td>
                   <td className="py-3 px-3 text-right hidden md:table-cell">

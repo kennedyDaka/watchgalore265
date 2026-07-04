@@ -190,7 +190,7 @@ export default function ProductPage() {
                   href={`/shop?category=${encodeURIComponent(product.category)}`}
                   className="text-xs font-semibold uppercase tracking-wider text-accent hover:underline capitalize"
                 >
-                  {product.category}
+                  {product.category_name || product.category}
                 </Link>
               </div>
             </div>

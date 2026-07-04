@@ -96,7 +96,7 @@ export default function StockTab() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold uppercase tracking-wide truncate">{p.name}</p>
-                  <p className="text-xs text-gray-400 capitalize">{p.category} · {formatMK(p.price)}</p>
+                  <p className="text-xs text-gray-400 capitalize">{p.category_name || p.category} · {formatMK(p.price)}</p>
                 </div>
 
                 {/* Status badge */}
