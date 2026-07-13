@@ -70,6 +70,16 @@ export default function ShopPage() {
     if (cat && cat !== category) setCategory(cat);
   }, [searchParams]); // eslint-disable-line
 
+  // Restore scroll position when coming back from a product
+  useEffect(() => {
+    if (loading) return;
+    const saved = sessionStorage.getItem('shop_scroll');
+    if (saved) {
+      sessionStorage.removeItem('shop_scroll');
+      requestAnimationFrame(() => window.scrollTo(0, Number(saved)));
+    }
+  }, [loading]);
+
   const handleCategoryChange = (cat: string) => {
     setCategory(cat);
     const params = new URLSearchParams(searchParams.toString());

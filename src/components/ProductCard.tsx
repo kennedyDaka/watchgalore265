@@ -31,7 +31,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
     'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80';
 
   return (
-    <Link href={`/product/${product.id}`} className="group block">
+    <Link href={`/product/${product.id}`} onClick={() => sessionStorage.setItem('shop_scroll', String(window.scrollY))} className="group block">
       {/* Image */}
       <div className="relative overflow-hidden bg-gray-50 aspect-square mb-3 w-full">
         <Image
