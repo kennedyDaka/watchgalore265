@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -9,31 +8,31 @@ import { getFeaturedProducts, getSiteContent } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+async function supabaseFetch(path: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const res = await fetch(`${url}/rest/v1/${path}`, {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Supabase ${res.status}`);
+  return res.json();
+}
+
 export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
   let categories: { id: string; slug: string; name: string }[] = [];
   let siteContent: Record<string, unknown> = {};
   let categoryProductImages: Record<string, string> = {};
   try {
-    const catClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-    );
-
-    const [catData, prodData] = await Promise.all([
-      catClient.from('categories').select('id, slug, name').order('name'),
-      catClient
-        .from('products')
-        .select('category_id, images, categories(slug)')
-        .eq('in_stock', true)
-        .gt('stock_quantity', 0)
-        .order('created_at', { ascending: false }),
+    const [catRows, prodRows] = await Promise.all([
+      supabaseFetch('categories?select=id,slug,name&order=name.asc'),
+      supabaseFetch("products?select=category_id,images,categories(slug)&in_stock=eq.true&stock_quantity=gt.0&order=created_at.desc"),
     ]);
-    categories = catData.data || [];
-
-    for (const row of prodData.data || []) {
-      const slug = (row as any).categories?.slug as string | undefined;
-      const images = (row as any).images as string[] | undefined;
+    categories = catRows || [];
+    for (const row of (prodRows || []) as Record<string, unknown>[]) {
+      const slug = (row.categories as Record<string, string> | null)?.slug;
+      const images = row.images as string[] | undefined;
       if (slug && images?.length && !categoryProductImages[slug]) {
         categoryProductImages[slug] = images[0];
       }
