@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
 import HomeSections from '@/components/HomeSections';
-import { getFeaturedProducts, getSiteContent, getCategoryProductImages } from '@/lib/supabase';
+import { getFeaturedProducts, getSiteContent } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,16 +19,29 @@ export default async function HomePage() {
       process.env.NEXT_PUBLIC_SUPABASE_URL || '',
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
     );
-    const { data: catData } = await catClient
-      .from('categories')
-      .select('id, slug, name')
-      .order('name');
-    categories = catData || [];
 
-    [featuredProducts, siteContent, categoryProductImages] = await Promise.all([
+    const [catData, prodData] = await Promise.all([
+      catClient.from('categories').select('id, slug, name').order('name'),
+      catClient
+        .from('products')
+        .select('category_id, images, categories(slug)')
+        .eq('in_stock', true)
+        .gt('stock_quantity', 0)
+        .order('created_at', { ascending: false }),
+    ]);
+    categories = catData.data || [];
+
+    for (const row of prodData.data || []) {
+      const slug = (row as any).categories?.slug as string | undefined;
+      const images = (row as any).images as string[] | undefined;
+      if (slug && images?.length && !categoryProductImages[slug]) {
+        categoryProductImages[slug] = images[0];
+      }
+    }
+
+    [featuredProducts, siteContent] = await Promise.all([
       getFeaturedProducts(),
       getSiteContent(),
-      getCategoryProductImages(),
     ]);
   } catch {}
 

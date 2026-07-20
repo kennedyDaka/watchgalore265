@@ -381,15 +381,6 @@ export async function getCategories() {
   return data || [];
 }
 
-export async function getCategoriesWithProducts() {
-  const { data: cats, error: catErr } = await supabase
-    .from('categories')
-    .select('*')
-    .order('name');
-  if (catErr) throw catErr;
-  return cats || [];
-}
-
 export async function createCategory(slug: string, name: string) {
   await requireAuth();
   const { data, error } = await supabase
