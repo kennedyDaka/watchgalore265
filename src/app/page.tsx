@@ -1,22 +1,32 @@
 import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ProductCard from '@/components/ProductCard';
 import HomeSections from '@/components/HomeSections';
-import { getFeaturedProducts, getCategoriesWithProducts, getSiteContent, getCategoryProductImages } from '@/lib/supabase';
+import { getFeaturedProducts, getSiteContent, getCategoryProductImages } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
-  let categories: Awaited<ReturnType<typeof getCategoriesWithProducts>> = [];
+  let categories: { id: string; slug: string; name: string }[] = [];
   let siteContent: Record<string, unknown> = {};
   let categoryProductImages: Record<string, string> = {};
   try {
-    [featuredProducts, categories, siteContent, categoryProductImages] = await Promise.all([
+    const catClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    );
+    const { data: catData } = await catClient
+      .from('categories')
+      .select('id, slug, name')
+      .order('name');
+    categories = catData || [];
+
+    [featuredProducts, siteContent, categoryProductImages] = await Promise.all([
       getFeaturedProducts(),
-      getCategoriesWithProducts(),
       getSiteContent(),
       getCategoryProductImages(),
     ]);
