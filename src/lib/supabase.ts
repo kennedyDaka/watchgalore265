@@ -373,11 +373,7 @@ export async function bulkDeleteProducts(ids: string[]) {
 // ─── Categories ──────────────────────────────────────────────
 
 export async function getCategories() {
-  const client = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-  );
-  const { data, error } = await client
+  const { data, error } = await supabase
     .from('categories')
     .select('*')
     .order('name');
@@ -386,11 +382,7 @@ export async function getCategories() {
 }
 
 export async function getCategoriesWithProducts() {
-  const client = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-  );
-  const { data: cats, error: catErr } = await client
+  const { data: cats, error: catErr } = await supabase
     .from('categories')
     .select('*')
     .order('name');
